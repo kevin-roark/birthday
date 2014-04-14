@@ -2,6 +2,7 @@ $(function() {
 
   var kt = require('./lib/kutility');
   var Statue = require('./statue');
+  var Smoke = require('./smoke');
 
   //var audio = document.querySelector('#audio');
   //var $aud = $(audio);
@@ -11,8 +12,11 @@ $(function() {
 
 	var renderer = new THREE.WebGLRenderer({antialias: true});
 	renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x444444, 1);
+  renderer.setClearColor(0x333333, 1);
 	document.body.appendChild(renderer.domElement);
+
+  var canvas = document.querySelector('canvas');
+  var $canvas = $(canvas);
 
   var spotlight = new THREE.SpotLight(0xffffff, 1.6, 1000);
   spotlight.position.set(0, 100, 250);
@@ -23,6 +27,8 @@ $(function() {
   scene.add(spotlight);
 
   var lilian = new Statue('media/lilian.png', 2, 0.7, 2);
+
+  var smokestacks = [];
 
   var vids = [];
   var $vids = [];
@@ -37,6 +43,8 @@ $(function() {
   var $nameMap = {};
 
   var AUDIO_LENGTH = 100000;
+  var SMOKE_TIME = 18000;
+  var LANDSCAPE_TIME = 40000;
 
   for (var i = 0; i < vids.length; i++)
     vids[i].addEventListener('canplaythrough', mediaReady);
@@ -58,6 +66,8 @@ $(function() {
     render();
 
     setTimeout(hideFooter, 1000);
+    setTimeout(startSmoke, SMOKE_TIME);
+    setTimeout(landscapeWarp, LANDSCAPE_TIME);
 
     soundControl();
 
@@ -127,6 +137,7 @@ $(function() {
     setTimeout(render, 20);
 
     doLilian();
+    doSmoke();
 
     renderer.render(scene, camera);
   }
@@ -142,6 +153,50 @@ $(function() {
 
     spotlight.target = lilian.structure;
     spotlight.color = new THREE.Color('rgb(255, 255, 180)'); // gold
+  }
+
+  function addSmoke(x, y, z, num) {
+    var smoke = new Smoke(x, y, z, num);
+    smokestacks.push(smoke);
+    smoke.addTo(scene);
+    setTimeout(function() {
+      smokeColor(smoke);
+    }, kt.randInt(10000, 6666));
+  }
+
+  function smokeColor(smoke) {
+    function smoker() {
+      setTimeout(smoker, kt.randInt(6666, 2000));
+      smoke.colorShift();
+    }
+    smoker();
+  }
+
+  function startSmoke() {
+    addSmoke(-2, 0, -4, 250);
+    setTimeout(function() {
+      addSmoke(2, 0, -4, 250);
+    }, 666);
+    active.smoke = true;
+  }
+
+  function landscapeWarp() {
+    active.landscape = true;
+    warp();
+
+    function warp() {
+      if (!active.landscape) return;
+
+      kt.brightness($canvas, kt.randInt(350, 150));
+      kt.hutate($canvas, kt.randInt(360));
+
+      setTimeout(function() {
+        kt.brightness($canvas, 100);
+        kt.hutate($canvas, 0);
+        setTimeout(warp, kt.randInt(800, 200));
+      }, kt.randInt(300, 60));
+    }
+
   }
 
   function doLilian() {
@@ -167,6 +222,13 @@ $(function() {
   function doLight() {
     setTimeout(doLight, kt.randInt(4000, 500));
 
+  }
+
+  function doSmoke() {
+    if (!active.smoke) return;
+
+    for (var i = 0; i < smokestacks.length; i++)
+      smokestacks[i].render();
   }
 
 

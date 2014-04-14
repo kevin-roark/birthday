@@ -568,6 +568,7 @@ $(function() {
 
   var kt = require('./lib/kutility');
   var Statue = require('./statue');
+  var Smoke = require('./smoke');
 
   //var audio = document.querySelector('#audio');
   //var $aud = $(audio);
@@ -577,8 +578,11 @@ $(function() {
 
 	var renderer = new THREE.WebGLRenderer({antialias: true});
 	renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x444444, 1);
+  renderer.setClearColor(0x333333, 1);
 	document.body.appendChild(renderer.domElement);
+
+  var canvas = document.querySelector('canvas');
+  var $canvas = $(canvas);
 
   var spotlight = new THREE.SpotLight(0xffffff, 1.6, 1000);
   spotlight.position.set(0, 100, 250);
@@ -589,6 +593,8 @@ $(function() {
   scene.add(spotlight);
 
   var lilian = new Statue('media/lilian.png', 2, 0.7, 2);
+
+  var smokestacks = [];
 
   var vids = [];
   var $vids = [];
@@ -603,6 +609,8 @@ $(function() {
   var $nameMap = {};
 
   var AUDIO_LENGTH = 100000;
+  var SMOKE_TIME = 14000;
+  var LANDSCAPE_TIME = 30000;
 
   for (var i = 0; i < vids.length; i++)
     vids[i].addEventListener('canplaythrough', mediaReady);
@@ -624,6 +632,8 @@ $(function() {
     render();
 
     setTimeout(hideFooter, 1000);
+    setTimeout(startSmoke, SMOKE_TIME);
+    setTimeout(landscapeWarp, LANDSCAPE_TIME);
 
     soundControl();
 
@@ -693,6 +703,7 @@ $(function() {
     setTimeout(render, 20);
 
     doLilian();
+    doSmoke();
 
     renderer.render(scene, camera);
   }
@@ -708,6 +719,50 @@ $(function() {
 
     spotlight.target = lilian.structure;
     spotlight.color = new THREE.Color('rgb(255, 255, 180)'); // gold
+  }
+
+  function addSmoke(x, y, z, num) {
+    var smoke = new Smoke(x, y, z, num);
+    smokestacks.push(smoke);
+    smoke.addTo(scene);
+    setTimeout(function() {
+      smokeColor(smoke);
+    }, kt.randInt(10000, 6666));
+  }
+
+  function smokeColor(smoke) {
+    function smoker() {
+      setTimeout(smoker, kt.randInt(6666, 2000));
+      smoke.colorShift();
+    }
+    smoker();
+  }
+
+  function startSmoke() {
+    addSmoke(-2, 0, -4, 250);
+    setTimeout(function() {
+      addSmoke(2, 0, -4, 250);
+    }, 666);
+    active.smoke = true;
+  }
+
+  function landscapeWarp() {
+    active.landscape = true;
+    warp();
+
+    function warp() {
+      if (!active.landscape) return;
+
+      kt.brightness($canvas, kt.randInt(350, 150));
+      kt.hutate($canvas, kt.randInt(360));
+
+      setTimeout(function() {
+        kt.brightness($canvas, 100);
+        kt.hutate($canvas, 0);
+        setTimeout(warp, kt.randInt(800, 200));
+      }, kt.randInt(300, 60));
+    }
+
   }
 
   function doLilian() {
@@ -735,10 +790,84 @@ $(function() {
 
   }
 
+  function doSmoke() {
+    if (!active.smoke) return;
+
+    for (var i = 0; i < smokestacks.length; i++)
+      smokestacks[i].render();
+  }
+
 
 });
 
-},{"./lib/kutility":1,"./statue":3}],3:[function(require,module,exports){
+},{"./lib/kutility":1,"./smoke":3,"./statue":4}],3:[function(require,module,exports){
+
+module.exports = exports = Smoke;
+
+var kt = require('./lib/kutility');
+
+function Smoke(x, y, z, num) {
+  if (!num) num = 250;
+
+  this.texture = THREE.ImageUtils.loadTexture('media/smoke.png');
+
+  this.particles = new THREE.Geometry;
+  for (var i = 0; i < num; i++) {
+    var xp = randX();
+    var yp = Math.random() * 1.7 - 1;
+    var zp = randZ();
+    var particle = new THREE.Vector3(xp, yp, zp);
+    this.particles.vertices.push(particle);
+  }
+
+  this.material = new THREE.ParticleBasicMaterial({
+      map: this.texture
+    , transparent: true
+    , blending: THREE.AdditiveBlending
+    , size: 0.4
+    , color: 0x111111
+  });
+
+  this.smoke = new THREE.ParticleSystem(this.particles, this.material);
+  this.smoke.sortParticles = true;
+  this.smoke.position.x = x;
+  this.smoke.position.y = y;
+  this.smoke.position.z = z;
+}
+
+Smoke.prototype.addTo = function(scene) {
+  scene.add(this.smoke);
+}
+
+function randX() {
+  return Math.random() * 0.2;
+}
+
+function randZ() {
+  return Math.random() * 0.5;
+}
+
+Smoke.prototype.render = function() {
+  var particleCount = this.particles.vertices.length;
+  while (particleCount--) {
+    var particle = this.particles.vertices[particleCount];
+    particle.y += 0.02;
+
+    if (particle.y >= this.smoke.position.y + 1.1) {
+      particle.y = Math.random() - 1;
+      particle.x = randX();
+      particle.z = randZ();
+    }
+  }
+  this.particles.__dirtyVertices = true;
+}
+
+Smoke.prototype.colorShift = function() {
+  var color = kt.colorWheel(kt.randInt(1536));
+  this.smoke.material.color = new THREE.Color(color);
+}
+
+},{"./lib/kutility":1}],4:[function(require,module,exports){
 
 module.exports = exports = Statue;
 
