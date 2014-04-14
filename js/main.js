@@ -136,7 +136,10 @@ $(function() {
     active.lilian = true;
 
     lilian.rotate(0.2, 0, 0);
-    lilian.move(0, 1, -5);
+    lilian.move(0, 1, -1);
+    lilian.mode = 'zoomin';
+    lilian.speed = 0.005;
+
     spotlight.target = lilian.structure;
     spotlight.color = new THREE.Color('rgb(255, 255, 180)'); // gold
   }
@@ -144,7 +147,21 @@ $(function() {
   function doLilian() {
     if (!active.lilian) false;
 
-    lilian.rotate(0, 0.01);
+    if (lilian.mode == 'zoomin') {
+      lilian.move(0, 0, -1 * lilian.speed);
+      lilian.speed = Math.max(0.005, 0.005 * Math.abs(lilian.structure.position.z) * 0.8);
+      if (lilian.structure.position.z <= -50.0) {
+        lilian.mode = 'zoomback';
+      }
+    } else if (lilian.mode == 'zoomback') {
+      lilian.move(0, 0, lilian.speed);
+      lilian.speed = 0.5;
+      if (lilian.structure.position.z >= -5.0) {
+        lilian.mode = 'rotate';
+      }
+    } else if (lilian.mode == 'rotate') {
+      lilian.rotate(0, 0.01);
+    }
   }
 
   function doLight() {
