@@ -365,7 +365,7 @@ Kutility.prototype.rotate3d = function(el, x, y, z, d) {
  * @api public
  */
 Kutility.prototype.rotate3dx = function(el, d) {
-  this.trans3d(el, 1, 0, 0, d);
+  this.rotate3d(el, 1, 0, 0, d);
 }
 
 /**
@@ -374,7 +374,7 @@ Kutility.prototype.rotate3dx = function(el, d) {
  * @api public
  */
 Kutility.prototype.rotate3dy = function(el, d) {
-  this.trans3d(el, 0, 1, 0, d);
+  this.rotate3d(el, 0, 1, 0, d);
 }
 
 /**
@@ -383,7 +383,7 @@ Kutility.prototype.rotate3dy = function(el, d) {
  * @api public
  */
 Kutility.prototype.rotate3dz = function(el, d) {
-  this.trans3d(el, 0, 0, 1, d);
+  this.rotate3d(el, 0, 0, 1, d);
 }
 
 /**

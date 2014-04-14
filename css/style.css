@@ -22,9 +22,22 @@ body {
     background-color: #000;
 }
 
-.video-wrapper {
+.pic-wrapper {
 
 }
+  .holy-image {
+    display: none;
+    position: fixed;
+    top: 30%;
+    left: 50%;
+  }
+
+    #lilian {
+      width: 760px;
+      height: 218px;
+      margin-top: -109px;
+      margin-left: -380px;
+    }
 
 .debug-timer {
   position: absolute;

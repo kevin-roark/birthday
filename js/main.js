@@ -5,6 +5,15 @@ $(function() {
   //var audio = document.querySelector('#audio');
   //var $aud = $(audio);
 
+  var lilian = document.querySelector('#lilian');
+  var $lilian = $(lilian);
+  var lilStatue = {
+    dom: lilian,
+    jq: $lilian,
+    shadowColor: 'rgb(255, 200, 40)',
+    deg: 0,
+  };
+
   var vids = [];
   var $vids = [];
 
@@ -29,11 +38,14 @@ $(function() {
     }
   }
 
+  start();
+
   function start() {
 
     //audio.play();
-
     startVids();
+    setPerspectives();
+    startLilian();
 
     setTimeout(hideFooter, 1000);
 
@@ -106,6 +118,32 @@ $(function() {
       vids[i].play();
       vids[i].loop = true;
     }
+  }
+
+  function setPerspectives() {
+    kt.perp($lilian, kt.randInt(500, 100));
+  }
+
+  function spintate(axis, statue) {
+    statue.deg = statue.deg + 1;
+    if (axis == 'x') {
+      kt.rotate3dx(statue.jq, statue.deg);
+    } else if (axis == 'y') {
+      kt.rotate3dy(statue.jq, statue.deg);
+    } else { // axis == 'z'
+      kt.rotate3dz(statue.jq, statue.deg);
+    }
+
+    setTimeout(function() {
+      spintate(axis, statue);
+    }, 40);
+  }
+
+  function startLilian() {
+    kt.shadow($lilian, 3, 3, kt.randInt(20, 5), kt.randInt(20, 5), lilStatue.shadowColor);
+    $lilian.fadeIn(16000, function() {
+      spintate('y', lilStatue);
+    });
   }
 
 
