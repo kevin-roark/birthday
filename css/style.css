@@ -1,10 +1,3 @@
-html, button, input, select, textarea,
-.pure-g [class *= "pure-u"],
-.pure-g-r [class *= "pure-u"] {
-    /* Set your content font stack here: */
-    font-family: Helvetica, sans-serif;
-}
-
 html {
   margin: 0;
   padding: 0;
@@ -18,26 +11,12 @@ body {
     padding: 0;
     height: 100%;
     width: 100%;
-    overflow: hidden;
-    background-color: #000;
 }
 
-.pic-wrapper {
-
+canvas {
+  width: 100%;
+  height: 100%;
 }
-  .holy-image {
-    display: none;
-    position: fixed;
-    top: 30%;
-    left: 50%;
-  }
-
-    #lilian {
-      width: 760px;
-      height: 218px;
-      margin-top: -109px;
-      margin-left: -380px;
-    }
 
 .debug-timer {
   position: absolute;

@@ -1,18 +1,28 @@
 $(function() {
 
-  var kt = require('./lib/kutility'); /* you can remove this if you don't want it */
+  var kt = require('./lib/kutility');
+  var Statue = require('./statue');
 
   //var audio = document.querySelector('#audio');
   //var $aud = $(audio);
 
-  var lilian = document.querySelector('#lilian');
-  var $lilian = $(lilian);
-  var lilStatue = {
-    dom: lilian,
-    jq: $lilian,
-    shadowColor: 'rgb(255, 200, 40)',
-    deg: 0,
-  };
+  var scene = new THREE.Scene();
+	var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+	var renderer = new THREE.WebGLRenderer({antialias: true});
+	renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x444444, 1);
+	document.body.appendChild(renderer.domElement);
+
+  var spotlight = new THREE.SpotLight(0xffffff, 1.6, 1000);
+  spotlight.position.set(0, 100, 250);
+  spotlight.castShadow = true;
+  spotlight.angle = Math.PI / 2;
+  spotlight.exponent = 5.0;
+  spotlight.shadowDarkness = 0.8;
+  scene.add(spotlight);
+
+  var lilian = new Statue('media/lilian.png', 2, 0.7, 2);
 
   var vids = [];
   var $vids = [];
@@ -43,9 +53,9 @@ $(function() {
   function start() {
 
     //audio.play();
-    startVids();
-    setPerspectives();
+    doLight();
     startLilian();
+    render();
 
     setTimeout(hideFooter, 1000);
 
@@ -113,37 +123,33 @@ $(function() {
     }, kt.randInt(6666, 2666));
   }
 
-  function startVids() {
-    for(var i = 0; i < vids.length; i++) {
-      vids[i].play();
-      vids[i].loop = true;
-    }
-  }
+  function render() {
+    setTimeout(render, 20);
 
-  function setPerspectives() {
-    kt.perp($lilian, kt.randInt(500, 100));
-  }
+    doLilian();
 
-  function spintate(axis, statue) {
-    statue.deg = statue.deg + 1;
-    if (axis == 'x') {
-      kt.rotate3dx(statue.jq, statue.deg);
-    } else if (axis == 'y') {
-      kt.rotate3dy(statue.jq, statue.deg);
-    } else { // axis == 'z'
-      kt.rotate3dz(statue.jq, statue.deg);
-    }
-
-    setTimeout(function() {
-      spintate(axis, statue);
-    }, 40);
+    renderer.render(scene, camera);
   }
 
   function startLilian() {
-    kt.shadow($lilian, 3, 3, kt.randInt(20, 5), kt.randInt(20, 5), lilStatue.shadowColor);
-    $lilian.fadeIn(16000, function() {
-      spintate('y', lilStatue);
-    });
+    lilian.addTo(scene);
+    active.lilian = true;
+
+    lilian.rotate(0.2, 0, 0);
+    lilian.move(0, 1, -5);
+    spotlight.target = lilian.structure;
+    spotlight.color = new THREE.Color('rgb(255, 255, 180)'); // gold
+  }
+
+  function doLilian() {
+    if (!active.lilian) false;
+
+    lilian.rotate(0, 0.01);
+  }
+
+  function doLight() {
+    setTimeout(doLight, kt.randInt(4000, 500));
+
   }
 
 

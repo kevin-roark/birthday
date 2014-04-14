@@ -566,19 +566,29 @@ Kutility.prototype.blur = function(el, x) {
 },{}],2:[function(require,module,exports){
 $(function() {
 
-  var kt = require('./lib/kutility'); /* you can remove this if you don't want it */
+  var kt = require('./lib/kutility');
+  var Statue = require('./statue');
 
   //var audio = document.querySelector('#audio');
   //var $aud = $(audio);
 
-  var lilian = document.querySelector('#lilian');
-  var $lilian = $(lilian);
-  var lilStatue = {
-    dom: lilian,
-    jq: $lilian,
-    shadowColor: 'rgb(255, 200, 40)',
-    deg: 0,
-  };
+  var scene = new THREE.Scene();
+	var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+	var renderer = new THREE.WebGLRenderer({antialias: true});
+	renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x444444, 1);
+	document.body.appendChild(renderer.domElement);
+
+  var spotlight = new THREE.SpotLight(0xffffff, 1.6, 1000);
+  spotlight.position.set(0, 100, 250);
+  spotlight.castShadow = true;
+  spotlight.angle = Math.PI / 2;
+  spotlight.exponent = 5.0;
+  spotlight.shadowDarkness = 0.8;
+  scene.add(spotlight);
+
+  var lilian = new Statue('media/lilian.png', 2, 0.7, 2);
 
   var vids = [];
   var $vids = [];
@@ -609,9 +619,9 @@ $(function() {
   function start() {
 
     //audio.play();
-    startVids();
-    setPerspectives();
+    doLight();
     startLilian();
+    render();
 
     setTimeout(hideFooter, 1000);
 
@@ -679,40 +689,86 @@ $(function() {
     }, kt.randInt(6666, 2666));
   }
 
-  function startVids() {
-    for(var i = 0; i < vids.length; i++) {
-      vids[i].play();
-      vids[i].loop = true;
-    }
-  }
+  function render() {
+    setTimeout(render, 20);
 
-  function setPerspectives() {
-    kt.perp($lilian, kt.randInt(500, 100));
-  }
+    doLilian();
 
-  function spintate(axis, statue) {
-    statue.deg = statue.deg + 1;
-    if (axis == 'x') {
-      kt.rotate3dx(statue.jq, statue.deg);
-    } else if (axis == 'y') {
-      kt.rotate3dy(statue.jq, statue.deg);
-    } else { // axis == 'z'
-      kt.rotate3dz(statue.jq, statue.deg);
-    }
-
-    setTimeout(function() {
-      spintate(axis, statue);
-    }, 40);
+    renderer.render(scene, camera);
   }
 
   function startLilian() {
-    kt.shadow($lilian, 3, 3, kt.randInt(20, 5), kt.randInt(20, 5), lilStatue.shadowColor);
-    $lilian.fadeIn(16000, function() {
-      spintate('y', lilStatue);
-    });
+    lilian.addTo(scene);
+    active.lilian = true;
+
+    lilian.rotate(0.2, 0, 0);
+    lilian.move(0, 1, -5);
+    spotlight.target = lilian.structure;
+    spotlight.color = new THREE.Color('rgb(255, 255, 180)'); // gold
+  }
+
+  function doLilian() {
+    if (!active.lilian) false;
+
+    lilian.rotate(0, 0.01);
+  }
+
+  function doLight() {
+    setTimeout(doLight, kt.randInt(4000, 500));
+
   }
 
 
 });
+
+},{"./lib/kutility":1,"./statue":3}],3:[function(require,module,exports){
+
+module.exports = exports = Statue;
+
+var kt = require('./lib/kutility');
+
+function Statue(frontimg, w, h, d) {
+  this.frontTexture = THREE.ImageUtils.loadTexture(frontimg);
+  this.frontTexture.wrapS = THREE.RepeatWrapping;
+  this.frontTexture.wrapT = THREE.RepeatWrapping;
+
+  this.frontMaterial = new THREE.MeshPhongMaterial({ map: this.frontTexture});
+
+  var materials = [];
+  materials.push(this.frontMaterial);
+  for (var i = 0; i < 5; i++)
+    materials.push(this.frontMaterial.clone());
+
+  this.statueMaterial = new THREE.MeshFaceMaterial(materials);
+
+  this.geometry = new THREE.CubeGeometry(w, h, d);
+  this.structure = new THREE.Mesh(this.geometry, this.statueMaterial);
+}
+
+Statue.prototype.addTo = function(scene) {
+  scene.add(this.structure);
+}
+
+Statue.prototype.rotate = function(dx, dy) {
+  this.structure.rotation.x += dx;
+  this.structure.rotation.y += dy;
+}
+
+Statue.prototype.move = function(dx, dy, dz) {
+  this.structure.position.x += dx;
+  this.structure.position.y += dy;
+  this.structure.position.z += dz;
+}
+
+Statue.prototype.colorSides = function() {
+  var materials = this.statueMaterial.materials;
+  for (var i = 0; i < materials.length; i++) {
+    if (i == 3) continue; // front side
+
+    var mat = materials[i];
+    var col = kt.colorWheel(kt.randInt(1536));
+    mat.color = new THREE.Color(col);
+  }
+}
 
 },{"./lib/kutility":1}]},{},[2])
