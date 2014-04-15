@@ -569,6 +569,7 @@ $(function() {
   var kt = require('./lib/kutility');
   var Statue = require('./statue');
   var Smoke = require('./smoke');
+  var World = require('./world');
 
   //var audio = document.querySelector('#audio');
   //var $aud = $(audio);
@@ -609,8 +610,9 @@ $(function() {
   var $nameMap = {};
 
   var AUDIO_LENGTH = 100000;
-  var SMOKE_TIME = 14000;
-  var LANDSCAPE_TIME = 30000;
+  var SMOKE_TIME = 32000;
+  var LANDSCAPE_TIME = 55000;
+  var TWEET1_TIME = 30000;
 
   for (var i = 0; i < vids.length; i++)
     vids[i].addEventListener('canplaythrough', mediaReady);
@@ -627,13 +629,19 @@ $(function() {
   function start() {
 
     //audio.play();
+
+    var world = new World();
+    world.addTo(scene);
+
     doLight();
+
     startLilian();
     render();
 
     setTimeout(hideFooter, 1000);
     setTimeout(startSmoke, SMOKE_TIME);
     setTimeout(landscapeWarp, LANDSCAPE_TIME);
+    setTimeout(startTweet1, TWEET1_TIME);
 
     soundControl();
 
@@ -721,6 +729,92 @@ $(function() {
     spotlight.color = new THREE.Color('rgb(255, 255, 180)'); // gold
   }
 
+  function resetCamera() {
+    camera.position.set(0, 0, 0);
+    camera.rotation.set(0, 0, 0);
+  }
+
+  function zoomAround(callback) {
+    var zooms = 0;
+    var max = kt.randInt(8, 4);
+    var frametime = 20.0;
+    zoom();
+
+    function zoomTo(x, y, z, rotate, callback) {
+      var length = kt.randInt(4000, 1000);
+      var numframes = length / frametime;
+      var frame = 0;
+
+      var xd = (x - camera.position.x) / numframes;
+      var yd = (y - camera.position.y) / numframes;
+      var zd = (z - camera.position.z) / numframes;
+
+      if (rotate) {
+        var rd = Math.random() * 0.05;
+        var pd = Math.random() * 0.05;
+        var yd = Math.random() * 0.05;
+      } else {
+        var rd = 0;
+        var pd = 0;
+        var yd = 0;
+      }
+
+      anim();
+
+      function anim() {
+        camera.position.x += xd;
+        camera.position.y += yd;
+        camera.position.z += zd;
+
+        camera.rotation.x += rd;
+        camera.rotation.y += pd;
+        camera.rotation.z += yd;
+
+        if (frame++ <= numframes)
+          setTimeout(anim, frametime);
+        else {
+          setTimeout(function() {
+            callback();
+          }, kt.randInt(1000, 500));
+        }
+      }
+    }
+
+    function zoom() {
+      zooms++;
+      if (zooms == max) {
+        zoomTo(0, 0, 0, false, function() {
+          resetCamera();
+          callback();
+        });
+        return;
+      }
+
+      var x = (Math.random() * 15) - 7.5;
+      var y = (Math.random() * 15) - 7.5;
+      var z = (Math.random() * 10) - 40;
+      var rotate = false; //(zooms == 1)? false : true;
+      zoomTo(x, y, z, rotate, function() {
+        zoomTo(0, 0, 0, false, function() {
+          setTimeout(zoom, 1);
+        });
+      });
+    }
+
+  }
+
+  function startTweet1() {
+
+    function believe() {
+      console.log('bring in another');
+    }
+
+    lilian.mode = 'away';
+    setTimeout(function() {
+      zoomAround(believe)
+    }, 10000);
+  }
+
   function addSmoke(x, y, z, num) {
     var smoke = new Smoke(x, y, z, num);
     smokestacks.push(smoke);
@@ -739,9 +833,9 @@ $(function() {
   }
 
   function startSmoke() {
-    addSmoke(-2, 0, -4, 250);
+    addSmoke(-2, 0, -4, 150);
     setTimeout(function() {
-      addSmoke(2, 0, -4, 250);
+      addSmoke(1.5, 0, -4, 150);
     }, 666);
     active.smoke = true;
   }
@@ -782,6 +876,15 @@ $(function() {
       }
     } else if (lilian.mode == 'rotate') {
       lilian.rotate(0, 0.01);
+    } else if (lilian.mode == 'away') {
+      var x = Math.random() * 0.3 - 0.05;
+      var y = Math.random() * 0.2 - 0.05;
+      var z = Math.random() * -0.2 - 0.05;
+      lilian.move(x, y, z);
+      if (lilian.structure.position.z <= -60.0) {
+        lilian.mode = 'gone';
+        active.lilian = false;
+      }
     }
   }
 
@@ -800,7 +903,7 @@ $(function() {
 
 });
 
-},{"./lib/kutility":1,"./smoke":3,"./statue":4}],3:[function(require,module,exports){
+},{"./lib/kutility":1,"./smoke":3,"./statue":4,"./world":5}],3:[function(require,module,exports){
 
 module.exports = exports = Smoke;
 
@@ -824,7 +927,7 @@ function Smoke(x, y, z, num) {
       map: this.texture
     , transparent: true
     , blending: THREE.AdditiveBlending
-    , size: 0.4
+    , size: 0.5
     , color: 0x111111
   });
 
@@ -840,7 +943,7 @@ Smoke.prototype.addTo = function(scene) {
 }
 
 function randX() {
-  return Math.random() * 0.2;
+  return Math.random() * 0.3;
 }
 
 function randZ() {
@@ -914,6 +1017,47 @@ Statue.prototype.colorSides = function() {
     var mat = materials[i];
     var col = kt.colorWheel(kt.randInt(1536));
     mat.color = new THREE.Color(col);
+  }
+}
+
+},{"./lib/kutility":1}],5:[function(require,module,exports){
+
+module.exports = World;
+
+var kt = require('./lib/kutility');
+
+function World() {
+  this.numCubes = 35;
+  this.cubes = [];
+
+  for (var i = 0; i < this.numCubes; i++) {
+    var w = kt.randInt(30, 4);
+    var h = kt.randInt(25, 3);
+    var d = kt.randInt(12, 1);
+    var square = new THREE.CubeGeometry(w, h, d);
+
+    var texture = new THREE.MeshBasicMaterial({
+        wireframe: false
+      , transparent: true
+      , opacity: 0.3
+    });
+    var color = kt.colorWheel(kt.randInt(1536));
+    texture.color = new THREE.Color(color);
+    texture.wireframeLinewidth = 0.5;
+
+    var ob = new THREE.Mesh(square, texture);
+    var x = (Math.random() * 15) - 7.5;
+    var y = (Math.random() * 15) - 7.5;
+    var z = (Math.random() * 10) - 40;
+    ob.position.set(x, y, z);
+
+    this.cubes.push(ob);
+  }
+}
+
+World.prototype.addTo = function(scene) {
+  for (var i = 0; i < this.cubes.length; i++) {
+    scene.add(this.cubes[i]);
   }
 }
 

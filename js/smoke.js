@@ -21,7 +21,7 @@ function Smoke(x, y, z, num) {
       map: this.texture
     , transparent: true
     , blending: THREE.AdditiveBlending
-    , size: 0.4
+    , size: 0.5
     , color: 0x111111
   });
 
@@ -37,7 +37,7 @@ Smoke.prototype.addTo = function(scene) {
 }
 
 function randX() {
-  return Math.random() * 0.2;
+  return Math.random() * 0.3;
 }
 
 function randZ() {
