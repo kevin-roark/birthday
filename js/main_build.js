@@ -570,6 +570,9 @@ $(function() {
   var Statue = require('./statue');
   var Smoke = require('./smoke');
   var World = require('./world');
+  var sb = require('./skybox');
+  var skybox = sb.skybox;
+  var cubemap = sb.cubemap;
 
   //var audio = document.querySelector('#audio');
   //var $aud = $(audio);
@@ -577,13 +580,20 @@ $(function() {
   var scene = new THREE.Scene();
 	var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
 
-	var renderer = new THREE.WebGLRenderer({antialias: true});
+  var renderer;
+  if (window.WebGLRenderingContext)
+    renderer = new THREE.WebGLRenderer();
+  else
+    renderer = new THREE.CanvasRenderer();
+
 	renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(0x333333, 1);
 	document.body.appendChild(renderer.domElement);
 
   var canvas = document.querySelector('canvas');
   var $canvas = $(canvas);
+
+  scene.add(skybox);
 
   var spotlight = new THREE.SpotLight(0xffffff, 1.6, 1000);
   spotlight.position.set(0, 100, 250);
@@ -593,7 +603,8 @@ $(function() {
   spotlight.shadowDarkness = 0.8;
   scene.add(spotlight);
 
-  var lilian = new Statue('media/lilian.png', 2, 0.7, 2);
+  var lilian = new Statue('media/lilian.png', cubemap, 2, 0.7, 2);
+  var fwb = new Statue('media/fwb.png', cubemap, 2, 1.5, 1.8);
 
   var smokestacks = [];
 
@@ -610,9 +621,11 @@ $(function() {
   var $nameMap = {};
 
   var AUDIO_LENGTH = 100000;
-  var SMOKE_TIME = 32000;
-  var LANDSCAPE_TIME = 55000;
-  var TWEET1_TIME = 30000;
+  var WORLD_TIME = 28000;
+  var TWEET1_TIME = 45000;
+  var SMOKE_TIME = 94000;
+  var TWEET2_TIME = 115000;
+  var LANDSCAPE_TIME = 140000;
 
   for (var i = 0; i < vids.length; i++)
     vids[i].addEventListener('canplaythrough', mediaReady);
@@ -630,18 +643,17 @@ $(function() {
 
     //audio.play();
 
-    var world = new World();
-    world.addTo(scene);
-
     doLight();
 
     startLilian();
     render();
 
     setTimeout(hideFooter, 1000);
-    setTimeout(startSmoke, SMOKE_TIME);
-    setTimeout(landscapeWarp, LANDSCAPE_TIME);
+    setTimeout(addWorld, WORLD_TIME);
     setTimeout(startTweet1, TWEET1_TIME);
+    setTimeout(startSmoke, SMOKE_TIME);
+    setTimeout(startTweet2, TWEET2_TIME);
+    setTimeout(landscapeWarp, LANDSCAPE_TIME);
 
     soundControl();
 
@@ -712,8 +724,14 @@ $(function() {
 
     doLilian();
     doSmoke();
+    doFwb();
 
     renderer.render(scene, camera);
+  }
+
+  function addWorld() {
+    var world = new World();
+    world.addTo(scene);
   }
 
   function startLilian() {
@@ -736,7 +754,7 @@ $(function() {
 
   function zoomAround(callback) {
     var zooms = 0;
-    var max = kt.randInt(8, 4);
+    var max = kt.randInt(5, 3);
     var frametime = 20.0;
     zoom();
 
@@ -790,9 +808,9 @@ $(function() {
         return;
       }
 
-      var x = (Math.random() * 15) - 7.5;
-      var y = (Math.random() * 15) - 7.5;
-      var z = (Math.random() * 10) - 40;
+      var x = (Math.random() * 40) - 20;
+      var y = (Math.random() * 25) - 12.5;
+      var z = (Math.random() * 4) - 34;
       var rotate = false; //(zooms == 1)? false : true;
       zoomTo(x, y, z, rotate, function() {
         zoomTo(0, 0, 0, false, function() {
@@ -804,14 +822,39 @@ $(function() {
   }
 
   function startTweet1() {
+    function friendTime() {
+      fwb.addTo(scene);
+      active.fwb = true;
 
-    function believe() {
-      console.log('bring in another');
+      fwb.rotate(0.10, 0, 0);
+      fwb.move(0, 0.75, -1);
+      fwb.mode = 'zoomin';
+      fwb.speed = 0.005;
+
+      fwb.rdy = -1 * fwb.rdy;
+      fwb.awayVector.y = -0.01;
+
+      spotlight.target = fwb.structure;
+      spotlight.color = new THREE.Color('rgb(255, 150, 140)'); // red
     }
 
     lilian.mode = 'away';
     setTimeout(function() {
-      zoomAround(believe)
+      active.lilian = false;
+      zoomAround(friendTime)
+    }, 10000);
+  }
+
+  function startTweet2() {
+    function tweet2Time() {
+      console.log('lets go');
+    }
+
+
+    fwb.mode = 'away';
+    setTimeout(function() {
+      active.fwb = false;
+      zoomAround(tweet2Time);
     }, 10000);
   }
 
@@ -860,37 +903,17 @@ $(function() {
   }
 
   function doLilian() {
-    if (!active.lilian) false;
+    if (!active.lilian) return;
+    lilian.render();
+  }
 
-    if (lilian.mode == 'zoomin') {
-      lilian.move(0, 0, -1 * lilian.speed);
-      lilian.speed = Math.max(0.005, 0.005 * Math.abs(lilian.structure.position.z) * 0.8);
-      if (lilian.structure.position.z <= -50.0) {
-        lilian.mode = 'zoomback';
-      }
-    } else if (lilian.mode == 'zoomback') {
-      lilian.move(0, 0, lilian.speed);
-      lilian.speed = 0.5;
-      if (lilian.structure.position.z >= -5.0) {
-        lilian.mode = 'rotate';
-      }
-    } else if (lilian.mode == 'rotate') {
-      lilian.rotate(0, 0.01);
-    } else if (lilian.mode == 'away') {
-      var x = Math.random() * 0.3 - 0.05;
-      var y = Math.random() * 0.2 - 0.05;
-      var z = Math.random() * -0.2 - 0.05;
-      lilian.move(x, y, z);
-      if (lilian.structure.position.z <= -60.0) {
-        lilian.mode = 'gone';
-        active.lilian = false;
-      }
-    }
+  function doFwb() {
+    if (!active.fwb) return;
+    fwb.render();
   }
 
   function doLight() {
     setTimeout(doLight, kt.randInt(4000, 500));
-
   }
 
   function doSmoke() {
@@ -903,7 +926,50 @@ $(function() {
 
 });
 
-},{"./lib/kutility":1,"./smoke":3,"./statue":4,"./world":5}],3:[function(require,module,exports){
+},{"./lib/kutility":1,"./skybox":3,"./smoke":4,"./statue":5,"./world":6}],3:[function(require,module,exports){
+var kt = require('./lib/kutility');
+
+var url = 'media/socialmedia.jpg';
+
+var urls = [
+  url,
+  url,
+  url,
+  url,
+  url,
+  url
+];
+
+var cubemap = THREE.ImageUtils.loadTextureCube(urls); // load textures
+cubemap.format = THREE.RGBFormat;
+cubemap.wrapS = THREE.RepeatWrapping;
+cubemap.wrapT = THREE.RepeatWrapping;
+cubemap.repeat.set(2, 2);
+console.log(cubemap);
+
+var shader = THREE.ShaderLib['cube']; // init cube shader from built-in lib
+shader.uniforms['tCube'].value = cubemap; // apply textures to shader
+
+// create shader material
+var skyBoxMaterial = new THREE.ShaderMaterial( {
+  fragmentShader: shader.fragmentShader,
+  vertexShader: shader.vertexShader,
+  uniforms: shader.uniforms,
+  depthWrite: false,
+  side: THREE.BackSide,
+  opacity: 0.5
+});
+
+// create skybox mesh
+var skybox = new THREE.Mesh(
+  new THREE.CubeGeometry(500, 500, 500),
+  skyBoxMaterial
+);
+
+module.exports.skybox = skybox;
+module.exports.cubemap = cubemap;
+
+},{"./lib/kutility":1}],4:[function(require,module,exports){
 
 module.exports = exports = Smoke;
 
@@ -970,18 +1036,26 @@ Smoke.prototype.colorShift = function() {
   this.smoke.material.color = new THREE.Color(color);
 }
 
-},{"./lib/kutility":1}],4:[function(require,module,exports){
+},{"./lib/kutility":1}],5:[function(require,module,exports){
 
 module.exports = exports = Statue;
 
 var kt = require('./lib/kutility');
 
-function Statue(frontimg, w, h, d) {
+var DEFAULT_SPEED = 0.005;
+
+function Statue(frontimg, skymap, w, h, d) {
   this.frontTexture = THREE.ImageUtils.loadTexture(frontimg);
   this.frontTexture.wrapS = THREE.RepeatWrapping;
   this.frontTexture.wrapT = THREE.RepeatWrapping;
 
-  this.frontMaterial = new THREE.MeshPhongMaterial({ map: this.frontTexture});
+  this.frontMaterial = new THREE.MeshPhongMaterial({
+      map: this.frontTexture
+    , envMap: skymap
+    , shininess: 100
+    , combine: THREE.MixOperation
+    , reflectivity: 0.35
+  });
 
   var materials = [];
   materials.push(this.frontMaterial);
@@ -992,6 +1066,22 @@ function Statue(frontimg, w, h, d) {
 
   this.geometry = new THREE.CubeGeometry(w, h, d);
   this.structure = new THREE.Mesh(this.geometry, this.statueMaterial);
+
+  this.mode = null;
+  this.speed = DEFAULT_SPEED; // zoom speed
+  this.zoombackSpeed = 0.5;
+
+  this.rdx = 0.0; // rotation delta x
+  this.rdy = 0.01; // rotation delta y
+
+  this.zbackthresh = -50.0; // how far to zoom back
+  this.desiredZ = -5.0; // how far to come back up
+
+  this.awayVector = {
+    x: 0.25,
+    y: 0.2,
+    z: -0.2
+  };
 }
 
 Statue.prototype.addTo = function(scene) {
@@ -1020,45 +1110,88 @@ Statue.prototype.colorSides = function() {
   }
 }
 
-},{"./lib/kutility":1}],5:[function(require,module,exports){
+Statue.prototype.render = function() {
+  if (this.mode == 'zoomin') {
+    this.move(0, 0, -1 * this.speed);
+    this.speed = Math.max(DEFAULT_SPEED, DEFAULT_SPEED * Math.abs(this.structure.position.z) * 0.8);
+    if (this.structure.position.z <= this.zbackthresh) {
+      this.mode = 'zoomback';
+    }
+  } else if (this.mode == 'zoomback') {
+    this.move(0, 0, this.zoombackSpeed);
+    if (this.structure.position.z >= this.desiredZ) {
+      this.mode = 'rotate';
+    }
+  } else if (this.mode == 'rotate') {
+    this.rotate(this.rdx, this.rdy);
+  } else if (this.mode == 'away') {
+    var x = Math.random() * this.awayVector.x - 0.05;
+    var y = Math.random() * this.awayVector.y - 0.05;
+    var z = Math.random() * this.awayVector.z - 0.05;
+    this.move(x, y, z);
+    if (this.structure.position.z <= this.zbackthresh - 10) {
+      this.mode = 'gone';
+    }
+  }
+}
 
-module.exports = World;
+},{"./lib/kutility":1}],6:[function(require,module,exports){
 
 var kt = require('./lib/kutility');
 
+module.exports = World;
+
 function World() {
-  this.numCubes = 35;
+  this.numCubes = 60;
   this.cubes = [];
 
   for (var i = 0; i < this.numCubes; i++) {
-    var w = kt.randInt(30, 4);
-    var h = kt.randInt(25, 3);
-    var d = kt.randInt(12, 1);
-    var square = new THREE.CubeGeometry(w, h, d);
-
-    var texture = new THREE.MeshBasicMaterial({
-        wireframe: false
-      , transparent: true
-      , opacity: 0.3
-    });
-    var color = kt.colorWheel(kt.randInt(1536));
-    texture.color = new THREE.Color(color);
-    texture.wireframeLinewidth = 0.5;
-
-    var ob = new THREE.Mesh(square, texture);
-    var x = (Math.random() * 15) - 7.5;
-    var y = (Math.random() * 15) - 7.5;
-    var z = (Math.random() * 10) - 40;
-    ob.position.set(x, y, z);
-
+    var ob = genBox();
     this.cubes.push(ob);
   }
 }
 
+var genBox = function() {
+  var w = kt.randInt(15, 4);
+  var h = kt.randInt(10, 3);
+  var d = kt.randInt(6, 1);
+  var square = new THREE.CubeGeometry(w, h, d);
+
+  var texture = new THREE.MeshBasicMaterial({
+      wireframe: false
+    , transparent: true
+    , opacity: 0.3
+  });
+  var color = kt.colorWheel(kt.randInt(1536));
+  texture.color = new THREE.Color(color);
+  texture.wireframeLinewidth = 0.5;
+
+  var ob = new THREE.Mesh(square, texture);
+  var x = (Math.random() * 40) - 20;
+  var y = (Math.random() * 25) - 12.5;
+  var z = (Math.random() * 6) - 35;
+  ob.position.set(x, y, z);
+
+  return ob;
+}
+
 World.prototype.addTo = function(scene) {
-  for (var i = 0; i < this.cubes.length; i++) {
-    scene.add(this.cubes[i]);
+  var i = 0;
+  var self = this;
+  add();
+
+  function add() {
+    scene.add(self.cubes[i]);
+
+    if (++i < self.cubes.length)
+      setTimeout(add, kt.randInt(400, 50));
   }
+}
+
+World.prototype.addBox = function(scene) {
+  var box = genBox();
+  this.cubes.push(box);
+  scene.add(box);
 }
 
 },{"./lib/kutility":1}]},{},[2])

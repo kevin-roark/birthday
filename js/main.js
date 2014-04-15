@@ -4,6 +4,9 @@ $(function() {
   var Statue = require('./statue');
   var Smoke = require('./smoke');
   var World = require('./world');
+  var sb = require('./skybox');
+  var skybox = sb.skybox;
+  var cubemap = sb.cubemap;
 
   //var audio = document.querySelector('#audio');
   //var $aud = $(audio);
@@ -11,13 +14,20 @@ $(function() {
   var scene = new THREE.Scene();
 	var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
 
-	var renderer = new THREE.WebGLRenderer({antialias: true});
+  var renderer;
+  if (window.WebGLRenderingContext)
+    renderer = new THREE.WebGLRenderer();
+  else
+    renderer = new THREE.CanvasRenderer();
+
 	renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(0x333333, 1);
 	document.body.appendChild(renderer.domElement);
 
   var canvas = document.querySelector('canvas');
   var $canvas = $(canvas);
+
+  scene.add(skybox);
 
   var spotlight = new THREE.SpotLight(0xffffff, 1.6, 1000);
   spotlight.position.set(0, 100, 250);
@@ -27,7 +37,8 @@ $(function() {
   spotlight.shadowDarkness = 0.8;
   scene.add(spotlight);
 
-  var lilian = new Statue('media/lilian.png', 2, 0.7, 2);
+  var lilian = new Statue('media/lilian.png', cubemap, 2, 0.7, 2);
+  var fwb = new Statue('media/fwb.png', cubemap, 2, 1.5, 1.8);
 
   var smokestacks = [];
 
@@ -44,9 +55,11 @@ $(function() {
   var $nameMap = {};
 
   var AUDIO_LENGTH = 100000;
-  var SMOKE_TIME = 32000;
-  var LANDSCAPE_TIME = 55000;
-  var TWEET1_TIME = 30000;
+  var WORLD_TIME = 28000;
+  var TWEET1_TIME = 45000;
+  var SMOKE_TIME = 94000;
+  var TWEET2_TIME = 115000;
+  var LANDSCAPE_TIME = 140000;
 
   for (var i = 0; i < vids.length; i++)
     vids[i].addEventListener('canplaythrough', mediaReady);
@@ -64,18 +77,17 @@ $(function() {
 
     //audio.play();
 
-    var world = new World();
-    world.addTo(scene);
-
     doLight();
 
     startLilian();
     render();
 
     setTimeout(hideFooter, 1000);
-    setTimeout(startSmoke, SMOKE_TIME);
-    setTimeout(landscapeWarp, LANDSCAPE_TIME);
+    setTimeout(addWorld, WORLD_TIME);
     setTimeout(startTweet1, TWEET1_TIME);
+    setTimeout(startSmoke, SMOKE_TIME);
+    setTimeout(startTweet2, TWEET2_TIME);
+    setTimeout(landscapeWarp, LANDSCAPE_TIME);
 
     soundControl();
 
@@ -146,8 +158,14 @@ $(function() {
 
     doLilian();
     doSmoke();
+    doFwb();
 
     renderer.render(scene, camera);
+  }
+
+  function addWorld() {
+    var world = new World();
+    world.addTo(scene);
   }
 
   function startLilian() {
@@ -170,7 +188,7 @@ $(function() {
 
   function zoomAround(callback) {
     var zooms = 0;
-    var max = kt.randInt(8, 4);
+    var max = kt.randInt(5, 3);
     var frametime = 20.0;
     zoom();
 
@@ -224,9 +242,9 @@ $(function() {
         return;
       }
 
-      var x = (Math.random() * 15) - 7.5;
-      var y = (Math.random() * 15) - 7.5;
-      var z = (Math.random() * 10) - 40;
+      var x = (Math.random() * 40) - 20;
+      var y = (Math.random() * 25) - 12.5;
+      var z = (Math.random() * 4) - 34;
       var rotate = false; //(zooms == 1)? false : true;
       zoomTo(x, y, z, rotate, function() {
         zoomTo(0, 0, 0, false, function() {
@@ -238,14 +256,39 @@ $(function() {
   }
 
   function startTweet1() {
+    function friendTime() {
+      fwb.addTo(scene);
+      active.fwb = true;
 
-    function believe() {
-      console.log('bring in another');
+      fwb.rotate(0.10, 0, 0);
+      fwb.move(0, 0.75, -1);
+      fwb.mode = 'zoomin';
+      fwb.speed = 0.005;
+
+      fwb.rdy = -1 * fwb.rdy;
+      fwb.awayVector.y = -0.01;
+
+      spotlight.target = fwb.structure;
+      spotlight.color = new THREE.Color('rgb(255, 150, 140)'); // red
     }
 
     lilian.mode = 'away';
     setTimeout(function() {
-      zoomAround(believe)
+      active.lilian = false;
+      zoomAround(friendTime)
+    }, 10000);
+  }
+
+  function startTweet2() {
+    function tweet2Time() {
+      console.log('lets go');
+    }
+
+
+    fwb.mode = 'away';
+    setTimeout(function() {
+      active.fwb = false;
+      zoomAround(tweet2Time);
     }, 10000);
   }
 
@@ -294,37 +337,17 @@ $(function() {
   }
 
   function doLilian() {
-    if (!active.lilian) false;
+    if (!active.lilian) return;
+    lilian.render();
+  }
 
-    if (lilian.mode == 'zoomin') {
-      lilian.move(0, 0, -1 * lilian.speed);
-      lilian.speed = Math.max(0.005, 0.005 * Math.abs(lilian.structure.position.z) * 0.8);
-      if (lilian.structure.position.z <= -50.0) {
-        lilian.mode = 'zoomback';
-      }
-    } else if (lilian.mode == 'zoomback') {
-      lilian.move(0, 0, lilian.speed);
-      lilian.speed = 0.5;
-      if (lilian.structure.position.z >= -5.0) {
-        lilian.mode = 'rotate';
-      }
-    } else if (lilian.mode == 'rotate') {
-      lilian.rotate(0, 0.01);
-    } else if (lilian.mode == 'away') {
-      var x = Math.random() * 0.3 - 0.05;
-      var y = Math.random() * 0.2 - 0.05;
-      var z = Math.random() * -0.2 - 0.05;
-      lilian.move(x, y, z);
-      if (lilian.structure.position.z <= -60.0) {
-        lilian.mode = 'gone';
-        active.lilian = false;
-      }
-    }
+  function doFwb() {
+    if (!active.fwb) return;
+    fwb.render();
   }
 
   function doLight() {
     setTimeout(doLight, kt.randInt(4000, 500));
-
   }
 
   function doSmoke() {

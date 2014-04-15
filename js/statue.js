@@ -3,12 +3,20 @@ module.exports = exports = Statue;
 
 var kt = require('./lib/kutility');
 
-function Statue(frontimg, w, h, d) {
+var DEFAULT_SPEED = 0.005;
+
+function Statue(frontimg, skymap, w, h, d) {
   this.frontTexture = THREE.ImageUtils.loadTexture(frontimg);
   this.frontTexture.wrapS = THREE.RepeatWrapping;
   this.frontTexture.wrapT = THREE.RepeatWrapping;
 
-  this.frontMaterial = new THREE.MeshPhongMaterial({ map: this.frontTexture});
+  this.frontMaterial = new THREE.MeshPhongMaterial({
+      map: this.frontTexture
+    , envMap: skymap
+    , shininess: 100
+    , combine: THREE.MixOperation
+    , reflectivity: 0.35
+  });
 
   var materials = [];
   materials.push(this.frontMaterial);
@@ -19,6 +27,22 @@ function Statue(frontimg, w, h, d) {
 
   this.geometry = new THREE.CubeGeometry(w, h, d);
   this.structure = new THREE.Mesh(this.geometry, this.statueMaterial);
+
+  this.mode = null;
+  this.speed = DEFAULT_SPEED; // zoom speed
+  this.zoombackSpeed = 0.5;
+
+  this.rdx = 0.0; // rotation delta x
+  this.rdy = 0.01; // rotation delta y
+
+  this.zbackthresh = -50.0; // how far to zoom back
+  this.desiredZ = -5.0; // how far to come back up
+
+  this.awayVector = {
+    x: 0.25,
+    y: 0.2,
+    z: -0.2
+  };
 }
 
 Statue.prototype.addTo = function(scene) {
@@ -44,5 +68,30 @@ Statue.prototype.colorSides = function() {
     var mat = materials[i];
     var col = kt.colorWheel(kt.randInt(1536));
     mat.color = new THREE.Color(col);
+  }
+}
+
+Statue.prototype.render = function() {
+  if (this.mode == 'zoomin') {
+    this.move(0, 0, -1 * this.speed);
+    this.speed = Math.max(DEFAULT_SPEED, DEFAULT_SPEED * Math.abs(this.structure.position.z) * 0.8);
+    if (this.structure.position.z <= this.zbackthresh) {
+      this.mode = 'zoomback';
+    }
+  } else if (this.mode == 'zoomback') {
+    this.move(0, 0, this.zoombackSpeed);
+    if (this.structure.position.z >= this.desiredZ) {
+      this.mode = 'rotate';
+    }
+  } else if (this.mode == 'rotate') {
+    this.rotate(this.rdx, this.rdy);
+  } else if (this.mode == 'away') {
+    var x = Math.random() * this.awayVector.x - 0.05;
+    var y = Math.random() * this.awayVector.y - 0.05;
+    var z = Math.random() * this.awayVector.z - 0.05;
+    this.move(x, y, z);
+    if (this.structure.position.z <= this.zbackthresh - 10) {
+      this.mode = 'gone';
+    }
   }
 }
