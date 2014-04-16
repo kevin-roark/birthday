@@ -7,6 +7,7 @@ $(function() {
   var sb = require('./skybox');
   var skybox = sb.skybox;
   var cubemap = sb.cubemap;
+  var Gold = require('./gold');
 
   //var audio = document.querySelector('#audio');
   //var $aud = $(audio);
@@ -41,6 +42,7 @@ $(function() {
   var fwb = new Statue('media/fwb.png', cubemap, 2, 1.5, 1.8);
 
   var smokestacks = [];
+  var golds = [];
 
   var vids = [];
   var $vids = [];
@@ -58,6 +60,7 @@ $(function() {
   var WORLD_TIME = 28000;
   var TWEET1_TIME = 45000;
   var SMOKE_TIME = 94000;
+  var GOLD_TIME = 20000;
   var TWEET2_TIME = 115000;
   var LANDSCAPE_TIME = 140000;
 
@@ -88,6 +91,7 @@ $(function() {
     setTimeout(startSmoke, SMOKE_TIME);
     setTimeout(startTweet2, TWEET2_TIME);
     setTimeout(landscapeWarp, LANDSCAPE_TIME);
+    setTimeout(startGold, GOLD_TIME);
 
     soundControl();
 
@@ -159,6 +163,7 @@ $(function() {
     doLilian();
     doSmoke();
     doFwb();
+    doGold();
 
     renderer.render(scene, camera);
   }
@@ -188,7 +193,7 @@ $(function() {
 
   function zoomAround(callback) {
     var zooms = 0;
-    var max = kt.randInt(5, 3);
+    var max = kt.randInt(4, 2);
     var frametime = 20.0;
     zoom();
 
@@ -227,14 +232,14 @@ $(function() {
         else {
           setTimeout(function() {
             callback();
-          }, kt.randInt(1000, 500));
+          }, kt.randInt(800, 300));
         }
       }
     }
 
     function zoom() {
       zooms++;
-      if (zooms == max) {
+      if (zooms > max) {
         zoomTo(0, 0, 0, false, function() {
           resetCamera();
           callback();
@@ -246,8 +251,9 @@ $(function() {
       var y = (Math.random() * 25) - 12.5;
       var z = (Math.random() * 4) - 34;
       var rotate = false; //(zooms == 1)? false : true;
-      zoomTo(x, y, z, rotate, function() {
+      zoomTo(x, y, z, true, function() {
         zoomTo(0, 0, 0, false, function() {
+          resetCamera();
           setTimeout(zoom, 1);
         });
       });
@@ -261,11 +267,15 @@ $(function() {
       active.fwb = true;
 
       fwb.rotate(0.10, 0, 0);
-      fwb.move(0, 0.75, -1);
+      fwb.move(-2, -1, -1);
       fwb.mode = 'zoomin';
       fwb.speed = 0.005;
 
-      fwb.rdy = -1 * fwb.rdy;
+      fwb.rdy = -0.1 * fwb.rdy;
+      fwb.zbackthresh = -30;
+      fwb.desiredZ = -3.5;
+      fwb.desiredY = 0.3;
+
       fwb.awayVector.y = -0.01;
 
       spotlight.target = fwb.structure;
@@ -355,6 +365,61 @@ $(function() {
 
     for (var i = 0; i < smokestacks.length; i++)
       smokestacks[i].render();
+  }
+
+  function doGold() {
+    if (!active.gold) return;
+
+    for (var i = 0; i < golds.length; i++)
+      golds[i].render();
+  }
+
+  function rainGold() {
+    var i = 0;
+    var numGolds = kt.randInt(66, 20);
+    genGold();
+
+    setTimeout(function() {
+      for (var j = 0; j < golds.length; j++)
+        scene.remove(golds[j]);
+      golds = [];
+    }, 20000);
+
+    function genGold() {
+      var x = (Math.random() * 6) - 3; // -3 -> 3
+      var y = (Math.random() * 6) - 1.5; // -1.5 -> 4.5
+      var z = (Math.random() * 5) - 8; // -3 -> -8
+      var r = (Math.random() * 0.3) + 0.05;
+      var t = (Math.random() * 0.03) + 0.045;
+
+      var gold = new Gold(x, y, z, r, t);
+      gold.addTo(scene);
+      golds.push(gold);
+
+      setTimeout(function() {
+        gold.rain();
+        setTimeout(function() {
+          scene.remove(gold);
+        }, 10000);
+      }, kt.randInt(1500, 500));
+
+      if (++i < numGolds)
+        setTimeout(genGold, kt.randInt(120, 20));
+    }
+  }
+
+  function startGold() {
+    active.gold = true;
+    makeGold();
+
+    function makeGold() {
+      rainGold();
+
+      setTimeout(function() {
+        if (active.gold)
+          makeGold();
+      }, kt.randInt(40000, 20000));
+    }
   }
 
 

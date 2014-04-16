@@ -38,6 +38,8 @@ function Statue(frontimg, skymap, w, h, d) {
   this.zbackthresh = -50.0; // how far to zoom back
   this.desiredZ = -5.0; // how far to come back up
 
+  this.desiredY = 1.0;
+
   this.awayVector = {
     x: 0.25,
     y: 0.2,
@@ -77,6 +79,8 @@ Statue.prototype.render = function() {
     this.speed = Math.max(DEFAULT_SPEED, DEFAULT_SPEED * Math.abs(this.structure.position.z) * 0.8);
     if (this.structure.position.z <= this.zbackthresh) {
       this.mode = 'zoomback';
+      this.structure.position.x = 0;
+      this.structure.position.y = this.desiredY;
     }
   } else if (this.mode == 'zoomback') {
     this.move(0, 0, this.zoombackSpeed);
