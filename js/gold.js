@@ -3,7 +3,9 @@ module.exports = Gold;
 
 var map = THREE.ImageUtils.loadTexture('media/gold.png');
 map.wrapS = map.wrapT = THREE.RepeatWrapping;
-map.anisotropy = 16;
+map.mag_filter = map.min_filter = THREE.LinearFilter;
+map.repeat.set(1, 1);
+map.anisotropy = 8;
 
 var material = new THREE.MeshPhongMaterial({
     ambient: 0xffffff
@@ -16,10 +18,15 @@ function Gold(x, y, z, r, d) {
   this.material = material.clone();
 
   var p = Math.random();
-  if (p < 0.85)
+  if (p < 0.69)
     var geometry = new THREE.TorusGeometry(r, d, 16, 16, Math.PI * 2);
-  else
+  else if (p < 0.88)
     var geometry = new THREE.SphereGeometry(r * 0.6, 16, 16);
+  else {
+    var r1 = r * 0.5 + (Math.random() * 0.2) - 0.1;
+    var r2 = r1 + (Math.random() * 0.05 - 0.025);
+    var geometry = new THREE.CylinderGeometry(r1, r2, d * 10, 16, 2);
+  }
 
   var ring = new THREE.Mesh(geometry, this.material);
   ring.position.set(x, y, z);

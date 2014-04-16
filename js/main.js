@@ -8,6 +8,8 @@ $(function() {
   var skybox = sb.skybox;
   var cubemap = sb.cubemap;
   var Gold = require('./gold');
+  var Label = require('./label');
+  var mover = require('./mover');
 
   //var audio = document.querySelector('#audio');
   //var $aud = $(audio);
@@ -43,6 +45,13 @@ $(function() {
 
   var smokestacks = [];
   var golds = [];
+  var textures = ['media/flame.jpg', 'media/water.jpg', 'media/grass.jpg', 'media/metal.jpg'];
+  var phrases = [
+    'facebook', 'analytics', 'social media',
+    'insights', 'data feed', 'consume',
+    'friends', 'features', 'blogging platform',
+    'content', 'enrich', 'evolve', 'stream'
+  ];
 
   var vids = [];
   var $vids = [];
@@ -63,6 +72,7 @@ $(function() {
   var GOLD_TIME = 20000;
   var TWEET2_TIME = 115000;
   var LANDSCAPE_TIME = 140000;
+  var LABEL_TIME = 105000;
 
   for (var i = 0; i < vids.length; i++)
     vids[i].addEventListener('canplaythrough', mediaReady);
@@ -92,6 +102,7 @@ $(function() {
     setTimeout(startTweet2, TWEET2_TIME);
     setTimeout(landscapeWarp, LANDSCAPE_TIME);
     setTimeout(startGold, GOLD_TIME);
+    setTimeout(startLabels, LABEL_TIME);
 
     soundControl();
 
@@ -194,53 +205,12 @@ $(function() {
   function zoomAround(callback) {
     var zooms = 0;
     var max = kt.randInt(4, 2);
-    var frametime = 20.0;
     zoom();
-
-    function zoomTo(x, y, z, rotate, callback) {
-      var length = kt.randInt(4000, 1000);
-      var numframes = length / frametime;
-      var frame = 0;
-
-      var xd = (x - camera.position.x) / numframes;
-      var yd = (y - camera.position.y) / numframes;
-      var zd = (z - camera.position.z) / numframes;
-
-      if (rotate) {
-        var rd = Math.random() * 0.05;
-        var pd = Math.random() * 0.05;
-        var yd = Math.random() * 0.05;
-      } else {
-        var rd = 0;
-        var pd = 0;
-        var yd = 0;
-      }
-
-      anim();
-
-      function anim() {
-        camera.position.x += xd;
-        camera.position.y += yd;
-        camera.position.z += zd;
-
-        camera.rotation.x += rd;
-        camera.rotation.y += pd;
-        camera.rotation.z += yd;
-
-        if (frame++ <= numframes)
-          setTimeout(anim, frametime);
-        else {
-          setTimeout(function() {
-            callback();
-          }, kt.randInt(800, 300));
-        }
-      }
-    }
 
     function zoom() {
       zooms++;
       if (zooms > max) {
-        zoomTo(0, 0, 0, false, function() {
+        mover.moveTo(camera, 0, 0, 0, false, false, function() {
           resetCamera();
           callback();
         });
@@ -250,15 +220,14 @@ $(function() {
       var x = (Math.random() * 40) - 20;
       var y = (Math.random() * 25) - 12.5;
       var z = (Math.random() * 4) - 34;
-      var rotate = false; //(zooms == 1)? false : true;
-      zoomTo(x, y, z, true, function() {
-        zoomTo(0, 0, 0, false, function() {
+
+      mover.moveTo(camera, x, y, z, true, true, function() {
+        mover.moveTo(camera, 0, 0, 0, false, false, function() {
           resetCamera();
           setTimeout(zoom, 1);
         });
       });
     }
-
   }
 
   function startTweet1() {
@@ -273,8 +242,8 @@ $(function() {
 
       fwb.rdy = -0.1 * fwb.rdy;
       fwb.zbackthresh = -30;
-      fwb.desiredZ = -3.5;
-      fwb.desiredY = 0.3;
+      fwb.desiredZ = -3.8;
+      fwb.desiredY = 0.24;
 
       fwb.awayVector.y = -0.01;
 
@@ -422,5 +391,46 @@ $(function() {
     }
   }
 
+  function startLabels() {
+    active.label = true;
+    makeOne();
+
+    function makeOne() {
+      var label = genLabel();
+      setTimeout(function() {
+        moveLabel(label);
+      }, kt.randInt(2000, 500));
+
+      setTimeout(makeOne, kt.randInt(13333, 6666));
+    }
+  }
+
+  function genLabel() {
+    var x = (Math.random() * 3) - 7;
+    var y = (Math.random() * 3) - 1.5;
+    var z = (Math.random() * 5) - 25;
+    var phrase = kt.choice(phrases);
+    var texture = kt.choice(textures);
+    var label = new Label(x, y, z, kt.choice(phrases), kt.choice(textures), skybox);
+    label.addTo(scene);
+    return label;
+  }
+
+  function moveLabel(label) {
+    move();
+
+    function move() {
+      var x = (Math.random() * 100) - 50;
+      var y = (Math.random() * 60) - 30;
+      var z = (Math.random() * 235) - 250;
+      mover.moveTo(label.text, x, y, z, true, false, function() {
+        setTimeout(function() {
+          if (active.label)
+            move();
+        }, kt.randInt(200, 50));
+      });
+    }
+
+  }
 
 });
