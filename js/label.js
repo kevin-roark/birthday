@@ -54,13 +54,13 @@ function Label(x, y, z, letters, texture, cubemap) {
   this.material = faceMaterial(this.front, this.side);
 
   this.geometry = new THREE.TextGeometry(letters, {
-      size: 2
+      size: 2.2
     , height: 4
     , curveSegments: 4
     , font: "droid sans"
 
     , bevelThickness: 2
-		, bevelSize: 0.4
+		, bevelSize: 0.2
 		, bevelSegments: 3
 		, bevelEnabled: true
   });

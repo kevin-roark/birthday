@@ -111,13 +111,13 @@ function Label(x, y, z, letters, texture, cubemap) {
   this.material = faceMaterial(this.front, this.side);
 
   this.geometry = new THREE.TextGeometry(letters, {
-      size: 2
+      size: 2.2
     , height: 4
     , curveSegments: 4
     , font: "droid sans"
 
     , bevelThickness: 2
-		, bevelSize: 0.4
+		, bevelSize: 0.2
 		, bevelSegments: 3
 		, bevelEnabled: true
   });
@@ -775,7 +775,7 @@ $(function() {
   var GOLD_TIME = 20000;
   var TWEET2_TIME = 115000;
   var LANDSCAPE_TIME = 140000;
-  var LABEL_TIME = 105000;
+  var LABEL_TIME = 25000;
 
   for (var i = 0; i < vids.length; i++)
     vids[i].addEventListener('canplaythrough', mediaReady);
@@ -1048,7 +1048,7 @@ $(function() {
 
   function rainGold() {
     var i = 0;
-    var numGolds = kt.randInt(66, 20);
+    var numGolds = kt.randInt(75, 30);
     genGold();
 
     setTimeout(function() {
@@ -1104,13 +1104,13 @@ $(function() {
         moveLabel(label);
       }, kt.randInt(2000, 500));
 
-      setTimeout(makeOne, kt.randInt(13333, 6666));
+      setTimeout(makeOne, kt.randInt(18888, 6666));
     }
   }
 
   function genLabel() {
     var x = (Math.random() * 3) - 7;
-    var y = (Math.random() * 3) - 1.5;
+    var y = (Math.random() * -4) - 2;
     var z = (Math.random() * 5) - 25;
     var phrase = kt.choice(phrases);
     var texture = kt.choice(textures);
