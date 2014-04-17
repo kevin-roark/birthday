@@ -32,13 +32,16 @@ $(function() {
 
   scene.add(skybox);
 
-  var spotlight = new THREE.SpotLight(0xffffff, 1.6, 1000);
+  var spotlight = new THREE.SpotLight(new THREE.Color('rgb(255, 255, 180)'), 1.6, 1000);
   spotlight.position.set(0, 100, 250);
   spotlight.castShadow = true;
   spotlight.angle = Math.PI / 2;
   spotlight.exponent = 5.0;
   spotlight.shadowDarkness = 0.8;
   scene.add(spotlight);
+
+  var light = new THREE.AmbientLight(0x404000); // soft yellow light
+  scene.add(light);
 
   var lilian = new Statue('media/lilian.png', cubemap, 2, 0.7, 2);
   var fwb = new Statue('media/fwb.png', cubemap, 2, 1.5, 1.8);
@@ -183,7 +186,7 @@ $(function() {
     lilian.speed = 0.005;
 
     spotlight.target = lilian.structure;
-    spotlight.color = new THREE.Color('rgb(255, 255, 180)'); // gold
+    //spotlight.color = new THREE.Color('rgb(255, 255, 180)'); // gold
   }
 
   function resetCamera() {
@@ -237,7 +240,8 @@ $(function() {
       fwb.awayVector.y = -0.01;
 
       spotlight.target = fwb.structure;
-      spotlight.color = new THREE.Color('rgb(255, 170, 170)'); // red
+      //spotlight.color = new THREE.Color('rgb(255, 215, 215)'); // red
+      light.color = new THREE.Color(0x500000); // soft red light
     }
 
     lilian.mode = 'away';
@@ -269,7 +273,8 @@ $(function() {
       twt.awayVector.x = -1 * twt.awayVector.x;
       */
       //spotlight.target = twt.structure;
-      spotlight.color = new THREE.Color('rgb(190, 250, 255)'); // blue
+      //spotlight.color = new THREE.Color('rgb(215, 215, 255)'); // blue
+      light.color = new THREE.Color(0x000050); // soft blue light
     }
 
 
@@ -358,15 +363,17 @@ $(function() {
     genGold();
 
     setTimeout(function() {
-      for (var j = 0; j < golds.length; j++)
-        scene.remove(golds[j]);
-      golds = [];
+      for (var j = 0; j < golds.length; j++) {
+      //  scene.remove(golds[j]);
+        golds[j].yd = 0;
+      }
+      //golds = [];
     }, 20000);
 
     function genGold() {
       var x = (Math.random() * 6) - 3; // -3 -> 3
       var y = (Math.random() * 6) - 1.5; // -1.5 -> 4.5
-      var z = (Math.random() * 5) - 8; // -3 -> -8
+      var z = (Math.random() * 10) - 13; // -3 -> -13
       var r = (Math.random() * 0.3) + 0.05;
       var t = (Math.random() * 0.03) + 0.045;
 

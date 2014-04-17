@@ -20,7 +20,7 @@ function frontMaterial(map, env) {
     , map: map
     , envMap: env
     , shininess: 60
-    , reflectivity: 0.25
+    , reflectivity: 0.5
     , side: THREE.DoubleSide
   });
   return materialFront;
@@ -36,7 +36,7 @@ function sideMaterial(map, env) {
     , map: map
     , envMap: env
     , shininess: 60
-    , reflectivity: 0.25
+    , reflectivity: 0.5
     , side: THREE.DoubleSide
   });
   return materialSide;
