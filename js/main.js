@@ -72,7 +72,7 @@ $(function() {
   var GOLD_TIME = 20000;
   var TWEET2_TIME = 115000;
   var LANDSCAPE_TIME = 140000;
-  var LABEL_TIME = 25000;
+  var LABEL_TIME = 2000;
 
   for (var i = 0; i < vids.length; i++)
     vids[i].addEventListener('canplaythrough', mediaReady);

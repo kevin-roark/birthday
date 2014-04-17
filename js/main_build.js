@@ -112,13 +112,13 @@ function Label(x, y, z, letters, texture, cubemap) {
 
   this.geometry = new THREE.TextGeometry(letters, {
       size: 2.2
-    , height: 4
-    , curveSegments: 4
+    , height: 0.01
+    , curveSegments: 1
     , font: "droid sans"
 
-    , bevelThickness: 2
-		, bevelSize: 0.2
-		, bevelSegments: 3
+    , bevelThickness: 0.35
+		, bevelSize: 0.15
+		, bevelSegments: 1
 		, bevelEnabled: true
   });
 
@@ -775,7 +775,7 @@ $(function() {
   var GOLD_TIME = 20000;
   var TWEET2_TIME = 115000;
   var LANDSCAPE_TIME = 140000;
-  var LABEL_TIME = 25000;
+  var LABEL_TIME = 2000;
 
   for (var i = 0; i < vids.length; i++)
     vids[i].addEventListener('canplaythrough', mediaReady);

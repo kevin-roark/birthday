@@ -55,13 +55,13 @@ function Label(x, y, z, letters, texture, cubemap) {
 
   this.geometry = new THREE.TextGeometry(letters, {
       size: 2.2
-    , height: 4
-    , curveSegments: 4
+    , height: 0.01
+    , curveSegments: 1
     , font: "droid sans"
 
-    , bevelThickness: 2
-		, bevelSize: 0.2
-		, bevelSegments: 3
+    , bevelThickness: 0.35
+		, bevelSize: 0.15
+		, bevelSegments: 1
 		, bevelEnabled: true
   });
 
