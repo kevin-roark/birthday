@@ -714,8 +714,8 @@ $(function() {
   var Label = require('./label');
   var mover = require('./mover');
 
-  //var audio = document.querySelector('#audio');
-  //var $aud = $(audio);
+  var audio = document.querySelector('#audio');
+  var $aud = $(audio);
 
   var scene = new THREE.Scene();
 	var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
@@ -756,10 +756,7 @@ $(function() {
     'content', 'enrich', 'evolve', 'stream'
   ];
 
-  var vids = [];
-  var $vids = [];
-
-  var numMedia = vids.length; // number of things to load
+  var numMedia = 1; // number of things to load
   var mediasReady = 0;
 
   var active = {};
@@ -775,10 +772,9 @@ $(function() {
   var GOLD_TIME = 20000;
   var TWEET2_TIME = 115000;
   var LANDSCAPE_TIME = 140000;
-  var LABEL_TIME = 2000;
+  var LABEL_TIME = 25000;
 
-  for (var i = 0; i < vids.length; i++)
-    vids[i].addEventListener('canplaythrough', mediaReady);
+  audio.addEventListener('canplaythrough', mediaReady);
 
   function mediaReady() {
     mediasReady++;
@@ -787,11 +783,9 @@ $(function() {
     }
   }
 
-  start();
-
   function start() {
 
-    //audio.play();
+    audio.play();
 
     doLight();
 
@@ -817,11 +811,7 @@ $(function() {
   function endgame() {
 
     function restart() {
-
-      //audio.currentTime = 0;
-      for (var i = 0; i < vids.length; i++)
-        vids[i].currentTime = 0;
-
+      audio.currentTime = 0;
       start();
     }
 
@@ -857,8 +847,7 @@ $(function() {
   }
 
   function soundControl() {
-    for (var i = 0; i < vids.length; i++)
-      vids[i].muted = true;
+
   }
 
   function speed(vid, rate) {
@@ -943,7 +932,7 @@ $(function() {
       fwb.mode = 'zoomin';
       fwb.speed = 0.005;
 
-      fwb.rdy = -0.1 * fwb.rdy;
+      fwb.rdy = -0.06 * fwb.rdy;
       fwb.zbackthresh = -30;
       fwb.desiredZ = -3.8;
       fwb.desiredY = 0.24;
@@ -951,7 +940,7 @@ $(function() {
       fwb.awayVector.y = -0.01;
 
       spotlight.target = fwb.structure;
-      spotlight.color = new THREE.Color('rgb(255, 150, 140)'); // red
+      spotlight.color = new THREE.Color('rgb(255, 170, 170)'); // red
     }
 
     lilian.mode = 'away';
@@ -963,7 +952,27 @@ $(function() {
 
   function startTweet2() {
     function tweet2Time() {
-      console.log('lets go');
+
+      var twt; // fill later
+      //active.twt = true;
+      //twt.addTo(scene);
+
+      /*
+      twt.rotate(-0.1, 0, 0);
+      twt.move(2, -1, -1);
+      twt.mode = 'zoomin';
+      twt.speed = 0.008;
+
+      twt.rdy = 0.01 * twt.rdy;
+      twt.rdx = 0.003;
+      twt.zbackthresh = -20;
+      twt.desiredZ = -4;
+      twt.desiredY = 0.5;
+
+      twt.awayVector.x = -1 * twt.awayVector.x;
+      */
+      //spotlight.target = twt.structure;
+      spotlight.color = new THREE.Color('rgb(190, 250, 255)'); // blue
     }
 
 
