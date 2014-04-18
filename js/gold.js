@@ -8,7 +8,7 @@ map.repeat.set(1, 1);
 map.anisotropy = 8;
 
 var material = new THREE.MeshPhongMaterial({
-    ambient: 0xffffff
+    ambient: 0xbbbbbb
   , map: map
   , shininess: 80
   , side: THREE.DoubleSide

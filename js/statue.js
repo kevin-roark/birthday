@@ -107,6 +107,6 @@ Statue.prototype.render = function() {
 
 Statue.prototype.goCrazy = function() {
   this.timer = setInterval(function() {
-    this.rdy *= 1.005;
+    this.rdy *= 1.08;
   }, 100);
 }

@@ -9,7 +9,7 @@ map.repeat.set(1, 1);
 map.anisotropy = 8;
 
 var material = new THREE.MeshPhongMaterial({
-    ambient: 0xffffff
+    ambient: 0xbbbbbb
   , map: map
   , shininess: 80
   , side: THREE.DoubleSide
@@ -735,7 +735,7 @@ $(function() {
 
   scene.add(skybox);
 
-  var spotlight = new THREE.SpotLight(new THREE.Color('rgb(255, 255, 180)'), 1.6, 1000);
+  var spotlight = new THREE.SpotLight(new THREE.Color('rgb(255, 255, 200)'), 1.6, 1000);
   spotlight.position.set(0, 100, 250);
   spotlight.castShadow = true;
   spotlight.angle = Math.PI / 2;
@@ -782,7 +782,7 @@ $(function() {
   var LINKED_TIME = 209000;
   var LANDSCAPE_TIME = 190000;
   var LABEL_TIME = 47000;
-  var WRAPUP_TIME = 260000;
+  var WRAPUP_TIME = 265000;
 
   audio.addEventListener('canplaythrough', mediaReady);
 
@@ -955,7 +955,7 @@ $(function() {
 
       spotlight.target = fwb.structure;
       //spotlight.color = new THREE.Color('rgb(255, 215, 215)'); // red
-      light.color = new THREE.Color(0x500000); // soft red light
+      light.color = new THREE.Color(0x300000); // soft red light
     }
 
     lilian.mode = 'away';
@@ -984,7 +984,7 @@ $(function() {
 
       spotlight.target = genwife.structure;
       //spotlight.color = new THREE.Color('rgb(215, 215, 255)'); // blue
-      light.color = new THREE.Color(0x000050); // soft blue light
+      light.color = new THREE.Color(0x000030); // soft blue light
     }
 
 
@@ -1016,7 +1016,7 @@ $(function() {
       vp.awayVector.y = -1 * vp.awayVector.y;
 
       spotlight.target = vp.structure;
-      light.color = new THREE.Color(0x004040); // soft green light
+      light.color = new THREE.Color(0x002020); // soft green light
     }
 
     genwife.mode = 'away';
@@ -1038,11 +1038,11 @@ $(function() {
 
       linked.rdx = 0.005 * linked.rdy;
       linked.rdy = 0.005 * linked.rdy;
-      linked.desiredZ = -4.5;
+      linked.desiredZ = -5;
       linked.desiredY = 0.7;
 
       spotlight.target = linked.structure;
-      light.color = new THREE.Color(0x404000); // soft purple light
+      light.color = new THREE.Color(0x200020); // soft purple light
     }
 
     vp.mode = 'away';
@@ -1244,21 +1244,21 @@ $(function() {
     active.fwb = true;
     fwb.mode = 'rotate';
     fwb.rdx = fwb.rdy = 0.005;
-    mover.moveTo(fwb.structure, 5, 0, -8, false, false, function() {
+    mover.moveTo(fwb.structure, -2.5, -1.2, -8, false, false, function() {
       fwb.goCrazy();
     });
 
     active.genwife = true;
     genwife.mode = 'rotate';
     genwife.rdx = genwife.rdy = 0.005;
-    mover.moveTo(genwife.structure, 1.5, -2, -7, false, false, function() {
+    mover.moveTo(genwife.structure, 2, -1.5, -7, false, false, function() {
       genwife.goCrazy();
     });
 
     active.vp = true;
     vp.mode = 'rotate';
     vp.rdx = vp.rdy = 0.005;
-    mover.moveTo(vp.structure, 2, 0, -7, false, false, function() {
+    mover.moveTo(vp.structure, 1.7, 0, -7, false, false, function() {
 
     });
 
@@ -1270,8 +1270,10 @@ $(function() {
     var timer = setInterval(function() {
       var rgb = 'rgb(' + gray + ', ' + gray + ', ' + gray + ')';
       light.color = new THREE.Color(rgb);
-      spotlight.position.z -= 7;
-      if (gray-- < 0)
+      spotlight.position.z += 10;
+      console.log(light.color);
+      console.log(spotlight.position);
+      if (gray-- <= 0)
         clearInterval(timer);
     }, 200);
 
@@ -1548,7 +1550,7 @@ Statue.prototype.render = function() {
 
 Statue.prototype.goCrazy = function() {
   this.timer = setInterval(function() {
-    this.rdy *= 1.005;
+    this.rdy *= 1.08;
   }, 100);
 }
 
