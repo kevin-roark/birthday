@@ -1271,8 +1271,6 @@ $(function() {
       var rgb = 'rgb(' + gray + ', ' + gray + ', ' + gray + ')';
       light.color = new THREE.Color(rgb);
       spotlight.position.z += 10;
-      console.log(light.color);
-      console.log(spotlight.position);
       if (gray-- <= 0)
         clearInterval(timer);
     }, 200);
