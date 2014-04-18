@@ -45,6 +45,9 @@ $(function() {
 
   var lilian = new Statue('media/lilian.png', cubemap, 2, 0.7, 2);
   var fwb = new Statue('media/fwb.png', cubemap, 2, 1.5, 1.8);
+  var genwife = new Statue('media/genwife.png', cubemap, 1.8, 0.9, 1.4);
+  var vp = new Statue('media/vp.png', cubemap, 1.2, 1.9, 1.5);
+  var linked = new Statue('media/linked.png', cubemap, 2.5, 0.75, 1.5);
 
   var smokestacks = [];
   var golds = [];
@@ -53,7 +56,8 @@ $(function() {
     'facebook', 'analytics', 'social media',
     'insights', 'data feed', 'consume',
     'friends', 'features', 'blogging platform',
-    'content', 'enrich', 'evolve', 'stream'
+    'content', 'enrich', 'evolve', 'stream',
+    'stress', 'presence', 'connect', 'functionality'
   ];
 
   var numMedia = 1; // number of things to load
@@ -65,14 +69,17 @@ $(function() {
   var nameMap = {};
   var $nameMap = {};
 
-  var AUDIO_LENGTH = 100000;
-  var WORLD_TIME = 28000;
+  var AUDIO_LENGTH = 300000;
+  var WORLD_TIME = 35000;
   var TWEET1_TIME = 45000;
   var SMOKE_TIME = 94000;
-  var GOLD_TIME = 20000;
-  var TWEET2_TIME = 115000;
-  var LANDSCAPE_TIME = 140000;
-  var LABEL_TIME = 25000;
+  var GOLD_TIME = 25000;
+  var TWEET2_TIME = 95000;
+  var VP_TIME = 150000;
+  var LINKED_TIME = 209000;
+  var LANDSCAPE_TIME = 190000;
+  var LABEL_TIME = 47000;
+  var WRAPUP_TIME = 260000;
 
   audio.addEventListener('canplaythrough', mediaReady);
 
@@ -87,8 +94,6 @@ $(function() {
 
     audio.play();
 
-    doLight();
-
     startLilian();
     render();
 
@@ -97,14 +102,17 @@ $(function() {
     setTimeout(startTweet1, TWEET1_TIME);
     setTimeout(startSmoke, SMOKE_TIME);
     setTimeout(startTweet2, TWEET2_TIME);
+    setTimeout(startVp, VP_TIME);
+    setTimeout(startLinked, LINKED_TIME);
     setTimeout(landscapeWarp, LANDSCAPE_TIME);
     setTimeout(startGold, GOLD_TIME);
     setTimeout(startLabels, LABEL_TIME);
+    setTimeout(wrapItUp, WRAPUP_TIME);
 
     soundControl();
 
     setInterval(function() {
-      //$('.debug-timer').html(audio.currentTime);
+      $('.debug-timer').html(audio.currentTime);
     }, 200);
   }
 
@@ -165,7 +173,11 @@ $(function() {
 
     doLilian();
     doSmoke();
+    doLight();
     doFwb();
+    doGenwife();
+    doVp();
+    doLinked();
     doGold();
 
     renderer.render(scene, camera);
@@ -230,10 +242,9 @@ $(function() {
       fwb.rotate(0.10, 0, 0);
       fwb.move(-2, -1, -1);
       fwb.mode = 'zoomin';
-      fwb.speed = 0.005;
+      fwb.speed = 0.008;
 
-      fwb.rdy = -0.06 * fwb.rdy;
-      fwb.zbackthresh = -30;
+      fwb.rdy = -0.03 * fwb.rdy;
       fwb.desiredZ = -3.8;
       fwb.desiredY = 0.24;
 
@@ -253,26 +264,22 @@ $(function() {
 
   function startTweet2() {
     function tweet2Time() {
+      active.genwife = true;
+      genwife.addTo(scene);
 
-      var twt; // fill later
-      //active.twt = true;
-      //twt.addTo(scene);
+      genwife.rotate(-0.1, 0, 0);
+      genwife.move(2, -1, -1);
+      genwife.mode = 'zoomin';
+      genwife.speed = 0.01;
 
-      /*
-      twt.rotate(-0.1, 0, 0);
-      twt.move(2, -1, -1);
-      twt.mode = 'zoomin';
-      twt.speed = 0.008;
+      genwife.rdy = 0.01 * genwife.rdy;
+      genwife.rdx = 0.003;
+      genwife.desiredZ = -4;
+      genwife.desiredY = 0.5;
 
-      twt.rdy = 0.01 * twt.rdy;
-      twt.rdx = 0.003;
-      twt.zbackthresh = -20;
-      twt.desiredZ = -4;
-      twt.desiredY = 0.5;
+      genwife.awayVector.x = -0.5 * genwife.awayVector.x;
 
-      twt.awayVector.x = -1 * twt.awayVector.x;
-      */
-      //spotlight.target = twt.structure;
+      spotlight.target = genwife.structure;
       //spotlight.color = new THREE.Color('rgb(215, 215, 255)'); // blue
       light.color = new THREE.Color(0x000050); // soft blue light
     }
@@ -282,6 +289,63 @@ $(function() {
     setTimeout(function() {
       active.fwb = false;
       zoomAround(tweet2Time);
+    }, 10000);
+  }
+
+  function startVp() {
+    function vpTime() {
+      active.vp = true;
+      vp.addTo(scene);
+
+      vp.rotate(0, 0, 0);
+      vp.move(-2, 1.2, -1);
+      vp.mode = 'zoomin';
+      vp.speed = 0.014;
+
+      vp.rdx = 0;
+      vp.rdy = 0.002;
+      vp.goCrazy();
+
+      vp.desiredZ = -4.2;
+      vp.desiredY = 0.25;
+
+      vp.awayVector.x = -1 * vp.awayVector.x;
+      vp.awayVector.y = -1 * vp.awayVector.y;
+
+      spotlight.target = vp.structure;
+      light.color = new THREE.Color(0x004040); // soft green light
+    }
+
+    genwife.mode = 'away';
+    setTimeout(function() {
+      active.genwife = false;
+      zoomAround(vpTime);
+    }, 8000);
+  }
+
+  function startLinked() {
+    function linkedTime() {
+      active.linked = true;
+      linked.addTo(scene);
+
+      linked.rotate(0.1, 0, 0);
+      linked.move(2, 1.1, -1);
+      linked.mode = 'zoomin';
+      linked.speed = 0.009;
+
+      linked.rdx = 0.005 * linked.rdy;
+      linked.rdy = 0.005 * linked.rdy;
+      linked.desiredZ = -4.5;
+      linked.desiredY = 0.7;
+
+      spotlight.target = linked.structure;
+      light.color = new THREE.Color(0x404000); // soft purple light
+    }
+
+    vp.mode = 'away';
+    setTimeout(function() {
+      active.vp = false;
+      zoomAround(linkedTime);
     }, 10000);
   }
 
@@ -323,8 +387,8 @@ $(function() {
       setTimeout(function() {
         kt.brightness($canvas, 100);
         kt.hutate($canvas, 0);
-        setTimeout(warp, kt.randInt(800, 200));
-      }, kt.randInt(300, 60));
+        setTimeout(warp, kt.randInt(1200, 600));
+      }, kt.randInt(350, 100));
     }
 
   }
@@ -339,8 +403,25 @@ $(function() {
     fwb.render();
   }
 
+  function doGenwife() {
+    if (!active.genwife) return;
+    genwife.render();
+  }
+
+  function doVp() {
+    if (!active.vp) return;
+    vp.render();
+  }
+
+  function doLinked() {
+    if (!active.linked) return;
+    linked.render();
+  }
+
   function doLight() {
-    setTimeout(doLight, kt.randInt(4000, 500));
+    if (!active.light) return;
+
+
   }
 
   function doSmoke() {
@@ -422,7 +503,7 @@ $(function() {
   }
 
   function genLabel() {
-    var x = (Math.random() * 3) - 7;
+    var x = (Math.random() * 3) - 8.5;
     var y = (Math.random() * -4) - 2;
     var z = (Math.random() * 5) - 25;
     var phrase = kt.choice(phrases);
@@ -446,6 +527,50 @@ $(function() {
         }, kt.randInt(200, 50));
       });
     }
+
+  }
+
+  function wrapItUp() {
+    active.lilian = true;
+    lilian.mode = 'rotate';
+    lilian.rdx = lilian.rdy = 0.005;
+    mover.moveTo(lilian.structure, -2, 1, -7, false, false, function() {
+      lilian.goCrazy();
+    });
+
+    active.fwb = true;
+    fwb.mode = 'rotate';
+    fwb.rdx = fwb.rdy = 0.005;
+    mover.moveTo(fwb.structure, 5, 0, -8, false, false, function() {
+      fwb.goCrazy();
+    });
+
+    active.genwife = true;
+    genwife.mode = 'rotate';
+    genwife.rdx = genwife.rdy = 0.005;
+    mover.moveTo(genwife.structure, 1.5, -2, -7, false, false, function() {
+      genwife.goCrazy();
+    });
+
+    active.vp = true;
+    vp.mode = 'rotate';
+    vp.rdx = vp.rdy = 0.005;
+    mover.moveTo(vp.structure, 2, 0, -7, false, false, function() {
+
+    });
+
+    linked.rdx = linked.rdy = 0.005;
+    linked.goCrazy();
+
+    // untested
+    var gray = 100;
+    var timer = setInterval(function() {
+      var rgb = 'rgb(' + gray + ', ' + gray + ', ' + gray + ')';
+      light.color = new THREE.Color(rgb);
+      spotlight.position.z -= 7;
+      if (gray-- < 0)
+        clearInterval(timer);
+    }, 200);
 
   }
 

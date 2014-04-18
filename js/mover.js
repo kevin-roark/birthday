@@ -15,11 +15,11 @@ module.exports.moveTo = function zoomTo(ob, x, y, z, rotate, wait, callback) {
   if (rotate) {
     var rd = Math.random() * 0.05;
     var pd = Math.random() * 0.05;
-    var yd = Math.random() * 0.05;
+    var wd = Math.random() * 0.05;
   } else {
     var rd = 0;
     var pd = 0;
-    var yd = 0;
+    var wd = 0;
   }
 
   anim();
@@ -31,7 +31,7 @@ module.exports.moveTo = function zoomTo(ob, x, y, z, rotate, wait, callback) {
 
     ob.rotation.x += rd;
     ob.rotation.y += pd;
-    ob.rotation.z += yd;
+    ob.rotation.z += wd;
 
     if (frame++ <= numframes)
       setTimeout(anim, frametime);

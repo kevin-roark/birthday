@@ -62,6 +62,11 @@ Statue.prototype.move = function(dx, dy, dz) {
   this.structure.position.z += dz;
 }
 
+Statue.prototype.clear = function() {
+  this.structure.rotation.x = 0;
+  this.structure.rotation.y = 0;
+}
+
 Statue.prototype.colorSides = function() {
   var materials = this.statueMaterial.materials;
   for (var i = 0; i < materials.length; i++) {
@@ -76,7 +81,7 @@ Statue.prototype.colorSides = function() {
 Statue.prototype.render = function() {
   if (this.mode == 'zoomin') {
     this.move(0, 0, -1 * this.speed);
-    this.speed = Math.max(DEFAULT_SPEED, DEFAULT_SPEED * Math.abs(this.structure.position.z) * 0.8);
+    this.speed = Math.max(this.speed, DEFAULT_SPEED * Math.abs(this.structure.position.z) * 0.8);
     if (this.structure.position.z <= this.zbackthresh) {
       this.mode = 'zoomback';
       this.structure.position.x = 0;
@@ -98,4 +103,10 @@ Statue.prototype.render = function() {
       this.mode = 'gone';
     }
   }
+}
+
+Statue.prototype.goCrazy = function() {
+  this.timer = setInterval(function() {
+    this.rdy *= 1.005;
+  }, 100);
 }
