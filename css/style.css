@@ -26,6 +26,27 @@ canvas {
   font-size: 44px;
 }
 
+.curtain {
+  z-index: -1;
+  position: fixed;
+  top: 40%;
+  left: 40%;
+  font-size: 5em;
+  letter-spacing: 3px;
+}
+
+.error {
+  z-index: -1;
+  position: fixed;
+  top: 60%;
+  left: 10%;
+  font-size: 4em;
+  letter-spacing: 3px;
+  display: none;
+  color: white;
+  z-index: 1000;
+}
+
 .footer {
   width: 100%;
   position: absolute;

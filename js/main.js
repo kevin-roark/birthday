@@ -18,13 +18,23 @@ $(function() {
 	var camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
 
   var renderer;
-  if (window.WebGLRenderingContext)
+  var rendermode = 'webgl';
+  try {
     renderer = new THREE.WebGLRenderer();
-  else
+    renderer.setClearColor(0x333333, 1);
+  } catch(e) {
+    $('.error').show();
+    setTimeout(function() {
+      $('.error').fadeOut();
+    }, 6666);
     renderer = new THREE.CanvasRenderer();
+    renderer.setClearColor(0x111111, 1);
+    rendermode = 'canvas';
+    audio.loop = true;
+  }
 
 	renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x333333, 1);
+
 	document.body.appendChild(renderer.domElement);
 
   var canvas = document.querySelector('canvas');
@@ -57,7 +67,9 @@ $(function() {
     'insights', 'data feed', 'consume',
     'friends', 'features', 'blogging platform',
     'content', 'enrich', 'evolve', 'stream',
-    'stress', 'presence', 'connect', 'functionality'
+    'stress', 'presence', 'connect', 'functionality',
+    'capability', 'understanding', 'fear', 'interaction',
+    'reality', 'empathy', 'revenue', 'agency', 'brand'
   ];
 
   var numMedia = 1; // number of things to load
@@ -77,9 +89,9 @@ $(function() {
   var TWEET2_TIME = 95000;
   var VP_TIME = 150000;
   var LINKED_TIME = 209000;
-  var LANDSCAPE_TIME = 190000;
+  var LANDSCAPE_TIME = 210000;
   var LABEL_TIME = 47000;
-  var WRAPUP_TIME = 265000;
+  var WRAPUP_TIME = 262000;
 
   audio.addEventListener('canplaythrough', mediaReady);
 
@@ -96,8 +108,11 @@ $(function() {
 
     startLilian();
     render();
-
     setTimeout(hideFooter, 1000);
+
+    if (rendermode == 'canvas')
+      return;
+
     setTimeout(addWorld, WORLD_TIME);
     setTimeout(startTweet1, TWEET1_TIME);
     setTimeout(startSmoke, SMOKE_TIME);
@@ -112,15 +127,40 @@ $(function() {
     soundControl();
 
     setInterval(function() {
-      $('.debug-timer').html(audio.currentTime);
+      //$('.debug-timer').html(audio.currentTime);
     }, 200);
   }
 
   function endgame() {
 
-    function restart() {
+    function exist() {
+      function hello() {
+        $canvas.animate({opacity: '1.0'}, kt.randInt(15000, 5000), function() {
+          setTimeout(function() {
+            $canvas.animate({opacity: '0'}, kt.randInt(15000, 5000), function() {
+              setTimeout(hello, 5);
+            });
+          }, kt.randInt(15000, 10000));
+        });
+      }
+
+      function explore() {
+        var x = (Math.random() * 60) - 30;
+        var y = (Math.random() * 40) - 20;
+        var z = (Math.random() * 200) - 190;
+        mover.moveTo(camera, x, y, z, true, false, function() {
+          setTimeout(explore, 5);
+        });
+      }
+
+      light.color = new THREE.Color('rgb(255, 255, 215)');
+      spotlight.position.set(0, 100, 250);
+      audio.loop = true;
       audio.currentTime = 0;
-      start();
+      audio.play();
+
+      hello();
+      explore();
     }
 
     function showFooter() {
@@ -133,7 +173,7 @@ $(function() {
     }
 
     showFooter();
-    setTimeout(restart, 5000);
+    setTimeout(exist, 5000);
   }
 
   function hideFooter() {
@@ -498,7 +538,7 @@ $(function() {
         moveLabel(label);
       }, kt.randInt(2000, 500));
 
-      setTimeout(makeOne, kt.randInt(18888, 6666));
+      setTimeout(makeOne, kt.randInt(11666, 5666));
     }
   }
 
@@ -508,7 +548,7 @@ $(function() {
     var z = (Math.random() * 5) - 25;
     var phrase = kt.choice(phrases);
     var texture = kt.choice(textures);
-    var label = new Label(x, y, z, kt.choice(phrases), kt.choice(textures), skybox);
+    var label = new Label(x, y, z, phrase, kt.choice(textures), skybox);
     label.addTo(scene);
     return label;
   }
@@ -519,7 +559,7 @@ $(function() {
     function move() {
       var x = (Math.random() * 100) - 50;
       var y = (Math.random() * 60) - 30;
-      var z = (Math.random() * 235) - 250;
+      var z = (Math.random() * 260) - 250;
       mover.moveTo(label.text, x, y, z, true, false, function() {
         setTimeout(function() {
           if (active.label)
@@ -568,8 +608,13 @@ $(function() {
       var rgb = 'rgb(' + gray + ', ' + gray + ', ' + gray + ')';
       light.color = new THREE.Color(rgb);
       spotlight.position.z += 10;
-      if (gray-- <= 0)
+      if (gray-- <= 0) {
         clearInterval(timer);
+
+        $canvas.animate({opacity: 0}, (audio.duration - audio.currentTime) * 1000, function() {
+          endgame();
+        });
+      }
     }, 200);
 
   }

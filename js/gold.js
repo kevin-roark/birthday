@@ -23,9 +23,9 @@ function Gold(x, y, z, r, d) {
   else if (p < 0.88)
     var geometry = new THREE.SphereGeometry(r * 0.6, 16, 16);
   else {
-    var r1 = r * 0.5 + (Math.random() * 0.2) - 0.1;
+    var r1 = r * 0.35 + (Math.random() * 0.2) - 0.1;
     var r2 = r1 + (Math.random() * 0.05 - 0.025);
-    var geometry = new THREE.CylinderGeometry(r1, r2, d * 10, 16, 2);
+    var geometry = new THREE.CylinderGeometry(r1, r2, d * 15, 16, 2);
   }
 
   var ring = new THREE.Mesh(geometry, this.material);
