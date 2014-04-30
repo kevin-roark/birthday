@@ -72,7 +72,7 @@ $(function() {
     'reality', 'empathy', 'revenue', 'agency', 'brand'
   ];
 
-  var numMedia = 1; // number of things to load
+  var numMedia = 1 + 1; // number of things to load plus keypress
   var mediasReady = 0;
 
   var active = {};
@@ -94,6 +94,11 @@ $(function() {
   var WRAPUP_TIME = 262000;
 
   audio.addEventListener('canplaythrough', mediaReady);
+
+  $(document).keypress(function(ev) {
+    if (ev.keyCode == 115) // the 's' key
+      mediaReady();
+  });
 
   function mediaReady() {
     mediasReady++;
@@ -125,10 +130,6 @@ $(function() {
     setTimeout(wrapItUp, WRAPUP_TIME);
 
     soundControl();
-
-    setInterval(function() {
-      //$('.debug-timer').html(audio.currentTime);
-    }, 200);
   }
 
   function endgame() {
