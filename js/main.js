@@ -95,10 +95,39 @@ $(function() {
 
   audio.addEventListener('canplaythrough', mediaReady);
 
+  var generatedLabel = null;
+
   $(document).keypress(function(ev) {
-    if (ev.keyCode == 115) // the 's' key
+    if (ev.keyCode == 115) { // the 's' key
       mediaReady();
+    } else if (ev.keyCode == 117) { // the 'u' key
+      if (smokestacks.length > 0) {
+        smokestacks[0].colorShift();
+      }
+    } else if (ev.keyCode == 105) { // the 'i' key
+      if (smokestacks.length > 1) {
+        smokestacks[1].colorShift();
+      }
+    } else if (ev.keyCode == 111) { // the 'o' key
+      for (var i = 0; i < 5; i++) {
+        goldBlast();
+      }
+    } else if (ev.keyCode == 112) { // the 'p' key
+      if (generatedLabel) {
+        moveLabel(generatedLabel);
+        generatedLabel = null;
+      } else {
+        generatedLabel = genLabel();
+      }
+    }
   });
+
+  function goldBlast() {
+    var gold = createGold();
+    gold.addTo(scene);
+    golds.push(gold);
+    gold.rain();
+  }
 
   function mediaReady() {
     mediasReady++;
@@ -495,13 +524,7 @@ $(function() {
     }, 20000);
 
     function genGold() {
-      var x = (Math.random() * 6) - 3; // -3 -> 3
-      var y = (Math.random() * 6) - 1.5; // -1.5 -> 4.5
-      var z = (Math.random() * 10) - 13; // -3 -> -13
-      var r = (Math.random() * 0.3) + 0.05;
-      var t = (Math.random() * 0.03) + 0.045;
-
-      var gold = new Gold(x, y, z, r, t);
+      var gold = createGold();
       gold.addTo(scene);
       golds.push(gold);
 
@@ -515,6 +538,16 @@ $(function() {
       if (++i < numGolds)
         setTimeout(genGold, kt.randInt(120, 20));
     }
+  }
+
+  function createGold() {
+    var x = (Math.random() * 6) - 3; // -3 -> 3
+    var y = (Math.random() * 6) - 1.5; // -1.5 -> 4.5
+    var z = (Math.random() * 10) - 13; // -3 -> -13
+    var r = (Math.random() * 0.3) + 0.05;
+    var t = (Math.random() * 0.03) + 0.045;
+    var gold = new Gold(x, y, z, r, t);
+    return gold;
   }
 
   function startGold() {
@@ -565,8 +598,7 @@ $(function() {
       var z = (Math.random() * 260) - 250;
       mover.moveTo(label.text, x, y, z, true, false, function() {
         setTimeout(function() {
-          if (active.label)
-            move();
+          move();
         }, kt.randInt(200, 50));
       });
     }
