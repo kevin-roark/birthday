@@ -86,7 +86,7 @@ $(function() {
   var TWEET1_TIME = 45000;
   var SMOKE_TIME = 94000;
   var GOLD_TIME = 25000;
-  var TWEET2_TIME = 95000;
+  var TWEET2_TIME = 98000;
   var VP_TIME = 150000;
   var LINKED_TIME = 209000;
   var LANDSCAPE_TIME = 210000;
@@ -158,6 +158,8 @@ $(function() {
       audio.loop = true;
       audio.currentTime = 0;
       audio.play();
+      for (var i = 0; i < 9; i++)
+        audio.play();
 
       hello();
       explore();
