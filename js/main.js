@@ -96,8 +96,26 @@ $(function() {
   audio.addEventListener('canplaythrough', mediaReady);
 
   var generatedLabel = null;
+  var typingWord = false;
+  var phrase = '';
 
   $(document).keypress(function(ev) {
+    ev.preventDefault();
+
+    if (typingWord) {
+      if (ev.keyCode == 13) { // enter key
+        generatedLabel = generLabel(phrase);
+        phrase = '';
+        typingWord = false;
+        return;
+      }
+
+      var ch = String.fromCharCode(ev.which);
+      phrase += ch;
+      console.log(phrase);
+      return;
+    }
+
     if (ev.keyCode == 115) { // the 's' key
       mediaReady();
     } else if (ev.keyCode == 117) { // the 'u' key
@@ -119,6 +137,8 @@ $(function() {
       } else {
         generatedLabel = genLabel();
       }
+    } else if (ev.keyCode == 107) {
+      typingWord = true;
     }
   });
 
@@ -579,10 +599,14 @@ $(function() {
   }
 
   function genLabel() {
+    var phrase = kt.choice(phrases);
+    return generLabel(phrase);
+  }
+
+  function generLabel(phrase) {
     var x = (Math.random() * 3) - 8.5;
     var y = (Math.random() * -4) - 2;
     var z = (Math.random() * 5) - 25;
-    var phrase = kt.choice(phrases);
     var texture = kt.choice(textures);
     var label = new Label(x, y, z, phrase, kt.choice(textures), skybox);
     label.addTo(scene);
@@ -646,9 +670,9 @@ $(function() {
       if (gray-- <= 0) {
         clearInterval(timer);
 
-        $canvas.animate({opacity: 0}, (audio.duration - audio.currentTime) * 1000, function() {
+        setTimeout(function() {
           endgame();
-        });
+        }, (audio.duration - audio.currentTime) * 1000);
       }
     }, 200);
 
